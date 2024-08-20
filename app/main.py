@@ -2,6 +2,9 @@ from pyrogram import Client, filters
 from pyrogram.enums import ChatType
 
 import logging
+
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
 import db_driver
 import messages
 import logger
@@ -24,8 +27,24 @@ async def send_start(client: Client, message):
             db_driver.add_client(user_id, username, message.chat.id)
             logger.debug(f"Added new {username=}")
 
-    await client.send_message(message.chat.id,
-                              messages.START)
+    keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton('Status', 'status')],
+        [InlineKeyboardButton('Attend lesson', 'attend')],
+        [InlineKeyboardButton('Get FAQ', 'faq')],
+    ])
 
+    await client.send_message(message.chat.id,
+                              messages.START,
+                              reply_markup=keyboard)
+
+
+@app.on_callback_query()
+async def answer(client, callback_query):
+    if callback_query.data == 'status':
+        await client.send_message(callback_query.message.chat.id, 'status callback')
+    elif callback_query.data == 'attend':
+        await client.send_message(callback_query.message.chat.id, 'attending callback')
+    else:
+        await client.send_message(callback_query.message.chat.id, 'faq callback')
 
 app.run()

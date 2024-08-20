@@ -4,7 +4,7 @@ import logging
 logger = logging.getLogger('main_logger')
 
 logger.info('Connecting to database...')
-con = sqlite3.connect("clients.db")
+con = sqlite3.connect("../clients.db")
 cur = con.cursor()
 logger.info('Connection to db established')
 
