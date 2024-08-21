@@ -120,8 +120,8 @@ cmake-build-*/
 .idea
 
 ################################### Custom ###################################
-/Surgeon Course Bot.session-journal
-/Surgeon Course Bot.session
+/bot/Surgeon Course Bot.session-journal
+/bot/Surgeon Course Bot.session
 
 /*.log
 /*.db

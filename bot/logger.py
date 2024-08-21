@@ -1,4 +1,5 @@
 import logging
+from logging import Formatter
 
 
 class CustomFormatter(logging.Formatter):
@@ -28,13 +29,13 @@ def prepare_logger(level):
     logger.setLevel(level)
     fmtr = CustomFormatter()
     ch = logging.StreamHandler()
-    fh = logging.FileHandler(filename='../medCourseBot.log', mode='a', encoding='utf-8')
+    fh = logging.FileHandler(filename='../medSchoolBot.log', mode='a', encoding='utf-8')
 
     ch.setLevel(level)
     fh.setLevel(level)
 
     ch.setFormatter(fmtr)
-    fh.setFormatter(fmtr)
+    fh.setFormatter(Formatter(fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s (%(filename)s:%(lineno)d)"))
 
     logger.addHandler(ch)
     logger.addHandler(fh)
