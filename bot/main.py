@@ -1,12 +1,14 @@
 from pyrogram import Client, filters
 from pyrogram.enums import ChatType
+from pyrogram.types import (
+    ReplyKeyboardMarkup,
+    KeyboardButton,
+    Message
+)
 
 import logging
-
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-
 import db_driver
-import messages
+from bot.models.static import Responses, MenuOptions
 import logger
 
 logger.prepare_logger(logging.INFO)
@@ -27,24 +29,26 @@ async def send_start(client: Client, message):
             db_driver.add_client(user_id, username, message.chat.id)
             logger.debug(f"Added new {username=}")
 
-    keyboard = InlineKeyboardMarkup([
-        [InlineKeyboardButton('Status', 'status')],
-        [InlineKeyboardButton('Attend lesson', 'attend')],
-        [InlineKeyboardButton('Get FAQ', 'faq')],
-    ])
+    keyboard = ReplyKeyboardMarkup([
+        [KeyboardButton(MenuOptions.STATUS)],
+        [KeyboardButton(MenuOptions.APPLY)],
+        [KeyboardButton(MenuOptions.FAQ)],
+    ], is_persistent=True, placeholder='Choose option in menu')
 
     await client.send_message(message.chat.id,
-                              messages.START,
+                              Responses.START,
                               reply_markup=keyboard)
 
 
-@app.on_callback_query()
-async def answer(client, callback_query):
-    if callback_query.data == 'status':
-        await client.send_message(callback_query.message.chat.id, 'status callback')
-    elif callback_query.data == 'attend':
-        await client.send_message(callback_query.message.chat.id, 'attending callback')
+@app.on_message(filters.me)
+async def answer(client, message: Message):
+    chat_id = message.chat.id
+    if message.text == MenuOptions.STATUS:
+        await client.send_message(chat_id, 'status reply')
+    elif message.text == MenuOptions.APPLY:
+        await client.send_message(chat_id, 'attending reply')
     else:
-        await client.send_message(callback_query.message.chat.id, 'faq callback')
+        await client.send_message(chat_id, 'faq reply')
+
 
 app.run()
