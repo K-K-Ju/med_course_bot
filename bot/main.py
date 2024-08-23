@@ -9,7 +9,7 @@ from pyrogram.types import (
 
 import logging
 import db_driver
-from bot.models.static import Responses, MenuOptions, ReplyKeyboards
+from bot.models.keyboards import Responses, MenuOptions, ReplyKeyboards
 import logger
 
 logger.prepare_logger(logging.INFO)
@@ -30,6 +30,8 @@ async def send_start(client: Client, message):
             db_driver.add_client(user_id, username, message.chat.id)
             logger.debug(f"Added new {username=}")
 
+    user = db_driver.get_user(message.from_user.id)
+
     keyboard = ReplyKeyboardMarkup([
         [KeyboardButton(MenuOptions.STATUS)],
         [KeyboardButton(MenuOptions.APPLY)],
@@ -39,6 +41,11 @@ async def send_start(client: Client, message):
     await client.send_message(message.chat.id,
                               Responses.START,
                               reply_markup=keyboard)
+
+
+@app.on_message(filters.command('status'))
+async def show_status(client, message: Message):
+    db_driver.get_user(message.from_user.id)
 
 
 @app.on_message(filters.text & filters.private)
