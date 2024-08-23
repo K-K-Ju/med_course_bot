@@ -29,7 +29,7 @@ def prepare_logger(level):
     logger.setLevel(level)
     fmtr = CustomFormatter()
     ch = logging.StreamHandler()
-    fh = logging.FileHandler(filename='../medSchoolBot.log', mode='a', encoding='utf-8')
+    fh = logging.FileHandler(filename='../medSchoolBot.log', mode='a+', encoding='utf-8')
 
     ch.setLevel(level)
     fh.setLevel(level)

@@ -1,6 +1,8 @@
 import sqlite3
 import logging
 
+from bot.models.AppUser import AppUser
+
 logger = logging.getLogger('main_logger')
 
 logger.info('Connecting to database...')
@@ -16,7 +18,8 @@ def prepare_db():
             user_id BIGINT UNIQUE NOT NULL,
             username TEXT,
             chat_id BIGINT NOT NULL,
-            state INTEGER NOT NULL
+            registered BOOLEAN DEFAULT FALSE,
+            state SMALLINT NOT NULL DEFAULT 0
         );
     ''')
     logger.info('Finished preparing database')
@@ -25,16 +28,17 @@ def prepare_db():
 def add_client(user_id, username, chat_id):
     logger.debug(f'Adding {user_id=}')
     cur.execute('INSERT INTO users (user_id, username, chat_id, state) VALUES (?, ?, ?, ?)',
-                (user_id, username, chat_id, 0))
+                (user_id, username, chat_id))
     logger.debug(f'End adding user {user_id}')
 
 
-def get_user(user_id):
+def get_user(user_id) -> AppUser:
     logger.debug(f'Retrieving user by {user_id=}')
-    cur.execute('SELECT * FROM users WHERE user_id=?', user_id)
+    cur.execute(f'SELECT * FROM users WHERE user_id={user_id}')
     row = cur.fetchone()
     logger.debug(f'End of retrieving user by {user_id=}')
-    return row
+
+    return AppUser(row[0], row[1], row[3], row[4])
 
 
 def user_exists(user_id):
