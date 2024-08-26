@@ -28,7 +28,7 @@ def prepare_db():
 def add_client(user_id, username, chat_id):
     logger.debug(f'Adding {user_id=}')
     cur.execute('INSERT INTO users (user_id, username, chat_id, state) VALUES (?, ?, ?, ?)',
-                (user_id, username, chat_id))
+                (user_id, username, chat_id, 0))
     logger.debug(f'End adding user {user_id}')
 
 
@@ -38,7 +38,7 @@ def get_user(user_id) -> AppUser:
     row = cur.fetchone()
     logger.debug(f'End of retrieving user by {user_id=}')
 
-    return AppUser(row[0], row[1], row[3], row[4])
+    return AppUser(row[0], row[1], row[2], row[3])
 
 
 def user_exists(user_id):
