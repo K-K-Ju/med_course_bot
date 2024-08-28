@@ -1,51 +1,43 @@
-import sqlite3
 import logging
+import redis
 
 from bot.models.AppUser import AppUser
 
 logger = logging.getLogger('main_logger')
 
 logger.info('Connecting to database...')
-con = sqlite3.connect("../clients.db")
-cur = con.cursor()
+r = redis.Redis()
 logger.info('Connection to db established')
 
 
 def prepare_db():
     logger.info('Preparing database...')
-    cur.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            user_id BIGINT UNIQUE NOT NULL,
-            username TEXT,
-            chat_id BIGINT NOT NULL,
-            registered BOOLEAN DEFAULT FALSE,
-            state SMALLINT NOT NULL DEFAULT 0
-        );
-    ''')
+    ############
     logger.info('Finished preparing database')
 
 
-def add_client(user_id, username, chat_id):
-    logger.debug(f'Adding {user_id=}')
-    cur.execute('INSERT INTO users (user_id, username, chat_id, state) VALUES (?, ?, ?, ?)',
-                (user_id, username, chat_id, 0))
-    logger.debug(f'End adding user {user_id}')
+def add_client(app_user: AppUser):
+    logger.debug(f'Adding {app_user.user_id=}')
+    r.hset(app_user.user_id, mapping={
+            'username': app_user.user_name,
+            'chat_id': app_user.chat_id,
+            'state': 0
+    })
+    logger.debug(f'End adding user {app_user.user_id=}')
 
 
-def get_user(user_id) -> AppUser:
+async def get_user(user_id) -> AppUser:
     logger.debug(f'Retrieving user by {user_id=}')
-    cur.execute(f'SELECT * FROM users WHERE user_id={user_id}')
-    row = cur.fetchone()
+    user_dict = await r.hgetall(user_id)
     logger.debug(f'End of retrieving user by {user_id=}')
 
-    return AppUser(row[0], row[1], row[2], row[3])
+    return AppUser.from_dict(user_dict)
 
 
-def user_exists(user_id):
+async def user_exists(user_id):
     logger.debug(f'Checking whether user exists - {user_id}')
-    cur.execute(f'SELECT COUNT(user_id) FROM users WHERE user_id={user_id}')
-    res = cur.fetchone()
-    if res[0] == 1:
+    num = await r.exists(user_id)
+    if num == 1:
         return True
     else:
         return False
