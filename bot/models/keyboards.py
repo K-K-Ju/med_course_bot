@@ -14,6 +14,7 @@ class MenuOptions:
         STATUS = 'Show status'
         FAQ = 'Get FAQ'
         APPLY = 'Apply for lesson'
+        REGISTER = 'Register'
 
     class FAQ_OPTIONS:
         ABOUT_SCHOOL = 'Про школу'
@@ -35,7 +36,13 @@ class ReplyKeyboards:
         [KeyboardButton(MenuOptions.START_MENU.STATUS)],
         [KeyboardButton(MenuOptions.START_MENU.APPLY)],
         [KeyboardButton(MenuOptions.START_MENU.FAQ)],
-    ], is_persistent=True, placeholder='Choose option in menu', resize_keyboard=True)
+    ], is_persistent=True, placeholder='Choose option in menu', resize_keyboard=False)
+
+    START_NOT_REGISTERED = ReplyKeyboardMarkup([
+        [KeyboardButton(MenuOptions.START_MENU.STATUS)],
+        [KeyboardButton(MenuOptions.START_MENU.REGISTER)],
+        [KeyboardButton(MenuOptions.START_MENU.FAQ)],
+    ], is_persistent=True, placeholder='Choose option in menu', resize_keyboard=False)
 
     FAQ = ReplyKeyboardMarkup([
         [KeyboardButton(MenuOptions.FAQ_OPTIONS.ABOUT_SCHOOL)],
