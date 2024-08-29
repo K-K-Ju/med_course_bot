@@ -2,6 +2,7 @@ import logging
 import redis
 
 from bot.models.AppUser import AppUser
+from bot.static.states import State
 
 logger = logging.getLogger('main_logger')
 
@@ -33,7 +34,7 @@ def add_user(app_user: AppUser):
     logger.debug(f'End adding user {app_user.user_id=}')
 
 
-async def get_user(user_id) -> AppUser:
+def get_user(user_id) -> AppUser:
     logger.debug(f'Retrieving user by {user_id=}')
     user_dict = r.hgetall(user_id)
     logger.debug(f'End of retrieving user by {user_id=}')
@@ -41,7 +42,11 @@ async def get_user(user_id) -> AppUser:
     return AppUser.from_redis_dict(user_dict)
 
 
-async def user_exists(user_id):
+def set_user_state(user_id, state: State):
+    r.hset(user_id, 'state', format(state.value, 'b'))
+
+
+def user_exists(user_id):
     logger.debug(f'Checking whether user exists - {user_id}')
     num = r.exists(user_id)
     if num == 1:

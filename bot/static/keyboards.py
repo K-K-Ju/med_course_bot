@@ -9,6 +9,7 @@ class MenuOptions:
         FAQ = 'Get FAQ'
         APPLY = 'Apply for lesson'
         REGISTER = 'Register'
+        CONTACT_MANAGER = 'Contact manager'
 
     class FAQ_OPTIONS:
         ABOUT_SCHOOL = 'Про школу'
@@ -24,12 +25,18 @@ class MenuOptions:
         WHY = 'Some text'
         LIST = 'Some text 2'
 
+    class ADMIN_OPTIONS:
+        CONTACT_USER = 'Contact pending user'
+        EXPORT_TABLE = 'Export users data to Excel table'
+        FIND_USER = 'Get data about user by id, phone or username'
+
 
 class ReplyKeyboards:
     START = ReplyKeyboardMarkup([
         [KeyboardButton(MenuOptions.START_MENU.STATUS)],
         [KeyboardButton(MenuOptions.START_MENU.APPLY)],
         [KeyboardButton(MenuOptions.START_MENU.FAQ)],
+        [KeyboardButton(MenuOptions.START_MENU.CONTACT_MANAGER)]
     ], is_persistent=True, placeholder='Choose option in menu', resize_keyboard=False)
 
     START_NOT_REGISTERED = ReplyKeyboardMarkup([
@@ -69,6 +76,17 @@ class ReplyKeyboards:
         [KeyboardButton('about money 2')],
         [KeyboardButton('about money 3')]
     ])
+
+
+class AdminReplyKeyboards:
+    START = ReplyKeyboardMarkup([
+        [KeyboardButton(MenuOptions.ADMIN_OPTIONS.FIND_USER)],
+        [KeyboardButton(MenuOptions.ADMIN_OPTIONS.CONTACT_USER)],
+        [KeyboardButton(MenuOptions.ADMIN_OPTIONS.EXPORT_TABLE)],
+    ], is_persistent=True,
+        placeholder='Choose option in menu',
+        resize_keyboard=True,
+        one_time_keyboard=True)
 
 
 class FAQInfo:
