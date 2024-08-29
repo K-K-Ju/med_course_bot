@@ -7,6 +7,7 @@ logger = logging.getLogger('main_logger')
 
 logger.info('Connecting to database...')
 r = redis.Redis(db=1)
+r_admin = redis.Redis(db=2)
 logger.info('Connection to db established')
 
 
@@ -44,6 +45,13 @@ async def user_exists(user_id):
     logger.debug(f'Checking whether user exists - {user_id}')
     num = r.exists(user_id)
     if num == 1:
+        return True
+    else:
+        return False
+
+
+def user_is_admin(user_id):
+    if r_admin.exists(user_id) > 0:
         return True
     else:
         return False

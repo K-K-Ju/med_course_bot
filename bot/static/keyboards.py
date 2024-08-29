@@ -3,12 +3,6 @@ from pyrogram.types import (
     KeyboardButton)
 
 
-class Responses:
-    START = "Start command message"
-    INFO = "Here will be main info about Bot"
-    BACK = 'Назад'
-
-
 class MenuOptions:
     class START_MENU:
         STATUS = 'Show status'

@@ -126,3 +126,4 @@ cmake-build-*/
 /*.log
 /*.db
 /.gspread_config/
+/secrets.json
