@@ -30,7 +30,7 @@ async def send_start(client: Client, message: Message):
 @app.on_message(filters.command('menu') & filters.private)
 async def send_menu(client, message):
     keyboard = ReplyKeyboards.START_NOT_REGISTERED
-    if await db.user_exists(message.from_user.id):
+    if db.user_exists(message.from_user.id):
         keyboard = ReplyKeyboards.START
 
     await client.send_message(message.chat.id,
@@ -42,14 +42,14 @@ async def send_menu(client, message):
 
 @app.on_message(filters.command('status'))
 async def show_status(client, message: Message):
-    user = await db.get_user(message.from_user.id)
+    user = db.get_user(message.from_user.id)
     # TODO print user status
 
 
-@app.on_message(filters.regex(MenuOptions.START_MENU.REGISTER))
+# @app.on_message(filters.regex())
 async def register(client: Client, message: Message):
     user_id = message.from_user.id
-    if await db.user_exists(user_id):
+    if db.user_exists(user_id):
         await client.send_message(message.chat.id, 'You are already registered. For better experience use menu.')
         return
 
@@ -89,6 +89,8 @@ async def answer(client, message: Message):
         await client.send_message(chat_id, 'attending reply')
     elif message.text == MenuOptions.START_MENU.FAQ:
         await client.send_message(chat_id, 'FAQ option')
+    elif message.text == MenuOptions.START_MENU.REGISTER:
+        await register(client, message)
     elif message.text == MenuOptions.START_MENU.CONTACT_MANAGER:
         user_id = message.from_user.id
         db.set_user_state(user_id, State.PENDING_MANAGER)

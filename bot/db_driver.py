@@ -1,5 +1,6 @@
 import logging
 import redis
+import re
 
 from bot.models.AppUser import AppUser
 from bot.static.states import State
@@ -29,9 +30,26 @@ def add_user(app_user: AppUser):
             'chat_id': app_user.chat_id,
             'name': app_user.name,
             'phone_number': app_user.phone_number,
-            'state': format(app_user.state, 'b')
+            'state': format(app_user.state.value, 'b')
     })
     logger.debug(f'End adding user {app_user.user_id=}')
+
+
+def get_users_with_status(state: State):
+    cursor = '0'
+    pattern = re.compile(r'')
+    filtered_data = {}
+    ids = r.scan()
+
+    for i in ids:
+        while cursor != 0:
+            cursor, data = r.hscan(i, cursor=cursor)
+            for k, v in data.items():
+                if pattern.match(v.decode('utf-8')):
+                    filtered_data[k.decode('utf-8')] = v.decode('utf-8')
+
+    for key, value in filtered_data.items():
+        print(f"Field: {key}, Value: {value}")
 
 
 def get_user(user_id) -> AppUser:
