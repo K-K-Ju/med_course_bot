@@ -1,6 +1,6 @@
 import asyncio
 
-from bot.models.AppUser import AppUser
+from bot.models import AppUser
 import gspread as gs
 
 

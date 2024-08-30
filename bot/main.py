@@ -7,7 +7,7 @@ from pyromod.types import ListenerTypes
 
 import db_driver as db
 from bot.models import app_client
-from bot.models.AppUser import AppUser
+from bot.models import AppUser
 from bot.static.keyboards import (
     MenuOptions,
     ReplyKeyboards
@@ -46,7 +46,6 @@ async def show_status(client, message: Message):
     # TODO print user status
 
 
-# @app.on_message(filters.regex())
 async def register(client: Client, message: Message):
     user_id = message.from_user.id
     if db.user_exists(user_id):
@@ -97,6 +96,7 @@ async def answer(client, message: Message):
         await client.send_message(chat_id, 'Wait until manager contacts you via bot')
     else:
         await client.send_message(chat_id, 'Please choose option in menu')
+        await send_menu(client, message)
 
 
 app.run()

@@ -1,4 +1,5 @@
 from bot.static.states import State
+from pyromod import Client
 
 
 class AppUser:
@@ -13,3 +14,10 @@ class AppUser:
     @staticmethod
     def from_redis_dict(d: dict):
         AppUser(d['user_id'], d['chat_id'], d['username'], d['name'], d['phone_number'], State(int(d['state'], 2)))
+
+
+class AppClient:
+    client = None
+
+    def __init__(self, name, lang):
+        AppClient.client = Client(name=name, lang_code=lang)
