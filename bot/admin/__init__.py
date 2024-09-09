@@ -1,2 +1,2 @@
-import db_driver
-import handlers
+import bot.admin.db_driver
+import bot.admin.handlers

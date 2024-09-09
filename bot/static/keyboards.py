@@ -5,11 +5,12 @@ from pyrogram.types import (
 
 class MenuOptions:
     class START_MENU:
-        STATUS = 'Show status'
-        FAQ = 'Get FAQ'
-        APPLY = 'Apply for lesson'
-        REGISTER = 'Register'
-        CONTACT_MANAGER = 'Contact manager'
+        STATUS = '⚡️Show status'
+        FAQ = '❓Get FAQ'
+        APPLY = '✅Apply for lesson'
+        REGISTER = '✒️Register'
+        CONTACT_MANAGER = '✋Contact manager'
+        MENU = '📔Menu state'
 
     class FAQ_OPTIONS:
         ABOUT_SCHOOL = 'Про школу'
@@ -26,24 +27,24 @@ class MenuOptions:
         LIST = 'Some text 2'
 
     class ADMIN_OPTIONS:
-        CONTACT_USER = 'Contact pending user'
+        CONTACT_USER = '☎️Contact pending user'
         EXPORT_TABLE = 'Export users data to Excel table'
-        FIND_USER = 'Get data about user by id, phone or username'
+        FIND_USER = '🔍Get data about user by id, phone or username'
+        ADD_LESSON = '➡️Add lesson'
+        GET_LESSONS = '⬇️Get lessons'
 
 
 class ReplyKeyboards:
     START = ReplyKeyboardMarkup([
-        [KeyboardButton(MenuOptions.START_MENU.STATUS)],
-        [KeyboardButton(MenuOptions.START_MENU.APPLY)],
-        [KeyboardButton(MenuOptions.START_MENU.FAQ)],
-        [KeyboardButton(MenuOptions.START_MENU.CONTACT_MANAGER)]
-    ], is_persistent=True, placeholder='Choose option in menu', resize_keyboard=False)
+        [KeyboardButton(MenuOptions.START_MENU.STATUS), KeyboardButton(MenuOptions.START_MENU.APPLY)],
+        [KeyboardButton(MenuOptions.START_MENU.FAQ), KeyboardButton(MenuOptions.START_MENU.CONTACT_MANAGER)],
+    ], is_persistent=True, placeholder='Choose option in menu', resize_keyboard=True)
 
     START_NOT_REGISTERED = ReplyKeyboardMarkup([
         [KeyboardButton(MenuOptions.START_MENU.STATUS)],
         [KeyboardButton(MenuOptions.START_MENU.REGISTER)],
         [KeyboardButton(MenuOptions.START_MENU.FAQ)],
-    ], is_persistent=True, placeholder='Choose option in menu', resize_keyboard=False)
+    ], is_persistent=True, placeholder='Choose option in menu', resize_keyboard=True)
 
     FAQ = ReplyKeyboardMarkup([
         [KeyboardButton(MenuOptions.FAQ_OPTIONS.ABOUT_SCHOOL)],
@@ -80,13 +81,12 @@ class ReplyKeyboards:
 
 class AdminReplyKeyboards:
     START = ReplyKeyboardMarkup([
-        [KeyboardButton(MenuOptions.ADMIN_OPTIONS.FIND_USER)],
-        [KeyboardButton(MenuOptions.ADMIN_OPTIONS.CONTACT_USER)],
+        [KeyboardButton(MenuOptions.ADMIN_OPTIONS.FIND_USER), KeyboardButton(MenuOptions.ADMIN_OPTIONS.CONTACT_USER)],
+        [KeyboardButton(MenuOptions.ADMIN_OPTIONS.ADD_LESSON), KeyboardButton(MenuOptions.ADMIN_OPTIONS.GET_LESSONS)],
         [KeyboardButton(MenuOptions.ADMIN_OPTIONS.EXPORT_TABLE)],
     ], is_persistent=True,
         placeholder='Choose option in menu',
-        resize_keyboard=True,
-        one_time_keyboard=True)
+        resize_keyboard=True)
 
 
 class FAQInfo:

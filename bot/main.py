@@ -5,9 +5,10 @@ from pyrogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
 from pyromod import Client
 from pyromod.types import ListenerTypes
 
-import db_driver as db
-from bot.models import app_client
-from bot.models import AppUser
+import db_driver
+from bot.custom_filters import first_is_emoji
+from bot.models import AppClient
+from bot.models import AppUserDAO
 from bot.static.keyboards import (
     MenuOptions,
     ReplyKeyboards
@@ -17,7 +18,8 @@ from bot.static.states import State
 
 logger = logging.getLogger('main_logger')
 logger.info('Test logger')
-app = app_client.AppClient.client
+app = AppClient.client
+db = db_driver.Db()
 
 
 @app.on_message(filters.command('start') & filters.private)
@@ -36,8 +38,6 @@ async def send_menu(client, message):
     await client.send_message(message.chat.id,
                               'Choose desirable option',
                               reply_markup=keyboard)
-    opt = await app.listen(chat_id=message.chat.id, filters=filters.text)
-    await answer(client, opt)
 
 
 @app.on_message(filters.command('status'))
@@ -49,28 +49,30 @@ async def show_status(client, message: Message):
 async def register(client: Client, message: Message):
     user_id = message.from_user.id
     if db.user_exists(user_id):
-        await client.send_message(message.chat.id, 'You are already registered. For better experience use menu.')
+        await client.send_message(message.chat.id, Messages.USE_MENU_REGISTRATION)
         return
 
     first_name = (await client.ask(message.chat.id, 'Enter your name', filters=filters.text)).text
-    phone_number = await get_phone_number(client, message)
-    app_user = AppUser(user_id, message.chat.id, message.from_user.username, first_name, phone_number,
-                       State.REGISTERED)
+    phone_number = await __get_phone_number__(client, message)
+
+    app_user = AppUserDAO(user_id, message.chat.id,
+                          message.from_user.username, first_name,
+                          phone_number, State.REGISTERED)
     db.add_user(app_user)
-    logger.debug(f"Registered new user id={user_id}")
+    logger.debug(f'Registered new user id={user_id}')
     await client.send_message(message.chat.id, 'You are now registered')
     await send_menu(client, message)
 
 
-async def get_phone_number(client, message):
+async def __get_phone_number__(client, message):
     if message.contact:
         return message.contact.phone_number
     else:
         await message.reply(
-            text="Allow to view your phone",
+            text='Allow to view your phone',
             reply_markup=ReplyKeyboardMarkup(
                 [
-                    [KeyboardButton("Share mobile", request_contact=True)],
+                    [KeyboardButton('Share mobile', request_contact=True)],
                 ],
                 resize_keyboard=True,
             ),
@@ -80,6 +82,7 @@ async def get_phone_number(client, message):
         return contact_msg.contact.phone_number
 
 
+@app.on_message(filters.text & filters.private & first_is_emoji)
 async def answer(client, message: Message):
     chat_id = message.chat.id
     if message.text == MenuOptions.START_MENU.STATUS:
@@ -94,8 +97,7 @@ async def answer(client, message: Message):
         user_id = message.from_user.id
         db.set_user_state(user_id, State.PENDING_MANAGER)
         await client.send_message(chat_id, 'Wait until manager contacts you via bot')
-    else:
-        await client.send_message(chat_id, 'Please choose option in menu')
+    elif message.text == MenuOptions.START_MENU.MENU:
         await send_menu(client, message)
 
 

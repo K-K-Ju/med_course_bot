@@ -1,4 +1,5 @@
 import logging
+import logger
 from logging import Formatter
 from logger import CustomFormatter
 from bot.models import AppClient
@@ -29,9 +30,8 @@ def prepare_logger(level):
 prepare_logger(logging.DEBUG)
 
 config.init_config('C:\\Users\\tusen\\Developing\\Python\\med_course_bot\\secrets.json')
-db.test_db()
+db.Db().test_db()
 AppClient(name="Surgeon Course Bot", lang='ua')
 
 import admin
 import main
-

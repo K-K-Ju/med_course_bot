@@ -1,8 +1,23 @@
+from redis.commands.search.field import TextField, TagField, NumericField
+
 from bot.static.states import State
 from pyromod import Client
 
 
-class AppUser:
+class DAO:
+    @staticmethod
+    def from_redis_dict(d: dict):
+        TypeError()
+
+
+class AppUserDAO(DAO):
+    schema = (
+        TextField("$.chat_id", as_name="name"),
+        TextField("$.username", as_name="username"),
+        TextField("$.phone_number", as_name="phone_number"),
+        NumericField("$.state", as_name="state")
+    )
+
     def __init__(self, _user_id_, _chat_id_, _username_, _name_, _phone_number_, _state_: State):
         self.user_id = _user_id_
         self.chat_id = _chat_id_
@@ -13,7 +28,28 @@ class AppUser:
 
     @staticmethod
     def from_redis_dict(d: dict):
-        AppUser(d['user_id'], d['chat_id'], d['username'], d['name'], d['phone_number'], State(int(d['state'], 2)))
+        AppUserDAO(d['user_id'], d['chat_id'], d['username'], d['name'], d['phone_number'], State(int(d['state'], 2)))
+
+
+class LessonDAO(DAO):
+    schema = (
+        TextField("$.title", as_name="title"),
+        TextField("$.date", as_name="date"),
+        TextField("$.time", as_name="time"),
+        NumericField("$.price", as_name="price"),
+        TextField("$.description", as_name="description"),
+    )
+
+    def __init__(self, _title_, _date_, _time_, _price_, _description_):
+        self.title = _title_
+        self.date = _date_
+        self.time = _time_
+        self.price = _price_
+        self.description = _description_
+
+    @staticmethod
+    def from_redis_dict(d: dict):
+        LessonDAO(d['id'], d['date'], d['time'], d['price'], d['description'])
 
 
 class AppClient:

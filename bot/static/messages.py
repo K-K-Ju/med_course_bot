@@ -2,6 +2,7 @@ class Messages:
     START = "Start command message"
     INFO = "Here will be main info about Bot"
     BACK = 'Назад'
+    USE_MENU_REGISTRATION = 'You are already registered. For better experience use menu.'
 
 
 class FAQInfo:

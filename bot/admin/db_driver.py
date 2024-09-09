@@ -1,12 +1,51 @@
 import logging
+from bot.models import LessonDAO
+
 import redis
 
+logger = logging.getLogger('main_logger')
 
-__r_admin__ = redis.Redis(db=2)
 
+class AdminDb:
+    def __init__(self):
+        logger.info('Preparing admin db driver...')
 
-def user_is_admin(user_id):
-    if __r_admin__.exists(user_id) > 0:
-        return True
-    else:
-        return False
+        self.__r_admin__ = redis.Redis(db=2)
+        self.__r_lessons__ = redis.Redis(db=3)
+        self.LESSON_ID_GEN = 'lesson_id_gen'
+        # rs = __r_admin__.ft()
+        if self.__r_lessons__.get(self.LESSON_ID_GEN) == 'nil':
+            self.__r_lessons__.set(self.LESSON_ID_GEN, 0)
+
+        logger.info('Admin db preparing is finished')
+
+    def user_is_admin(self, user_id):
+        logger.debug(f'Checking whether {user_id} is admin')
+        if self.__r_admin__.exists(user_id) > 0:
+            return True
+        else:
+            return False
+
+    def add_lesson(self, lesson: LessonDAO):
+        lesson_id = str(int(self.__r_lessons__.get(self.LESSON_ID_GEN), 2))
+        logger.debug(f'Adding lesson with {lesson_id=}...')
+
+        self.__r_lessons__.hset(lesson_id, mapping={
+            'title': lesson.title,
+            'date': lesson.date,
+            'time': lesson.time,
+            'price': format(lesson.price, 'b'),
+            'description': lesson.description
+        })
+
+        logger.debug(f'Finished adding lesson with {lesson_id=}')
+        self.__r_lessons__.incrby(self.LESSON_ID_GEN, 1)
+
+    def get_lessons(self):
+        lessons = []
+        ids = self.__r_lessons__.scan()
+        for idx in ids:
+            lesson = self.__r_lessons__.hgetall(idx)
+            lessons.append(LessonDAO.from_redis_dict(lesson))
+
+        return lessons

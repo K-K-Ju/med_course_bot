@@ -1,6 +1,6 @@
 import asyncio
 
-from bot.models import AppUser
+from bot.models import AppUserDAO
 import gspread as gs
 
 
@@ -15,7 +15,7 @@ class Gsheet:
         loop = asyncio.get_event_loop()
         loop.run_in_executor(None, self.__config_cursor__)
 
-    async def add_user(self, user: AppUser):
+    async def add_user(self, user: AppUserDAO):
         loop = asyncio.get_event_loop()
         await self.__update_cell_async__(loop, self.cursor, user.chat_id)
         self.cursor[1] += 1
