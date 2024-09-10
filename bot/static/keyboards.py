@@ -4,12 +4,14 @@ from pyrogram.types import (
 
 
 class MenuOptions:
+    PLACEHOLDER = 'Оберіть пункт меню'
+
     class START_MENU:
-        STATUS = '⚡️Show status'
-        FAQ = '❓Get FAQ'
-        APPLY = '✅Apply for lesson'
-        REGISTER = '✒️Register'
-        CONTACT_MANAGER = '✋Contact manager'
+        STATUS = '⚡️Дізнатись стан акаунту'
+        FAQ = '❓FAQ'
+        APPLY = '✅Запис на заняття'
+        REGISTER = '✒️Реєстрація'
+        CONTACT_MANAGER = '✋Зв\'язатись з менеджером'
         MENU = '📔Menu state'
 
     class FAQ_OPTIONS:
@@ -23,28 +25,28 @@ class MenuOptions:
         HOW = 'Як ми це плануємо зробити?'
 
     class WHO_SUITS_OPTIONS:
-        WHY = 'Some text'
-        LIST = 'Some text 2'
+        WHY = 'Навіщо це потрібно'
+        LIST = 'Для кого підійде курс'
 
     class ADMIN_OPTIONS:
-        CONTACT_USER = '☎️Contact pending user'
+        CONTACT_USER = '☎️Зв\'язатися з очікуючим користувачем'
         EXPORT_TABLE = 'Export users data to Excel table'
-        FIND_USER = '🔍Get data about user by id, phone or username'
-        ADD_LESSON = '➡️Add lesson'
-        GET_LESSONS = '⬇️Get lessons'
+        FIND_USER = '🔍Отримати дані про користувача через id, моб. теле. або @username'
+        ADD_LESSON = '➡️Додати занятя'
+        GET_LESSONS = '⬇️Список занять'
 
 
 class ReplyKeyboards:
     START = ReplyKeyboardMarkup([
         [KeyboardButton(MenuOptions.START_MENU.STATUS), KeyboardButton(MenuOptions.START_MENU.APPLY)],
         [KeyboardButton(MenuOptions.START_MENU.FAQ), KeyboardButton(MenuOptions.START_MENU.CONTACT_MANAGER)],
-    ], is_persistent=True, placeholder='Choose option in menu', resize_keyboard=True)
+    ], is_persistent=True, placeholder=MenuOptions.PLACEHOLDER, resize_keyboard=True)
 
     START_NOT_REGISTERED = ReplyKeyboardMarkup([
         [KeyboardButton(MenuOptions.START_MENU.STATUS)],
         [KeyboardButton(MenuOptions.START_MENU.REGISTER)],
         [KeyboardButton(MenuOptions.START_MENU.FAQ)],
-    ], is_persistent=True, placeholder='Choose option in menu', resize_keyboard=True)
+    ], is_persistent=True, placeholder=MenuOptions.PLACEHOLDER, resize_keyboard=True)
 
     FAQ = ReplyKeyboardMarkup([
         [KeyboardButton(MenuOptions.FAQ_OPTIONS.ABOUT_SCHOOL)],
@@ -60,7 +62,7 @@ class ReplyKeyboards:
         [KeyboardButton(MenuOptions.ABOUT_SHOOL_OPTIONS.HOW)],
         [KeyboardButton(MenuOptions.ABOUT_SHOOL_OPTIONS.BENEFITS)],
     ], is_persistent=True,
-        placeholder='Choose option in menu',
+        placeholder=MenuOptions.PLACEHOLDER,
         resize_keyboard=True,
         one_time_keyboard=True)
 
@@ -68,7 +70,7 @@ class ReplyKeyboards:
         [KeyboardButton(MenuOptions.WHO_SUITS_OPTIONS.WHY)],
         [KeyboardButton(MenuOptions.WHO_SUITS_OPTIONS.LIST)],
     ], is_persistent=True,
-        placeholder='Choose option in menu',
+        placeholder=MenuOptions.PLACEHOLDER,
         resize_keyboard=True,
         one_time_keyboard=True)
 
@@ -85,7 +87,7 @@ class AdminReplyKeyboards:
         [KeyboardButton(MenuOptions.ADMIN_OPTIONS.ADD_LESSON), KeyboardButton(MenuOptions.ADMIN_OPTIONS.GET_LESSONS)],
         [KeyboardButton(MenuOptions.ADMIN_OPTIONS.EXPORT_TABLE)],
     ], is_persistent=True,
-        placeholder='Choose option in menu',
+        placeholder=MenuOptions.PLACEHOLDER,
         resize_keyboard=True)
 
 
@@ -130,40 +132,39 @@ states = {
     ]
 }
 
-
-class Level:
-    MENU_OPTIONS: dict = None
-    KEYBOARDS: dict = None
-
-
-class Level1(Level):
-    MENU_OPTIONS = {
-        'STATUS': 'Show status',
-        'FAQ': 'Get FAQ',
-        'APPLY': 'Apply for lesson'
-    }
-    KEYBOARDS = {
-        'FAQ': ReplyKeyboards.FAQ,
-        'ABOUT_SCHOOL': ReplyKeyboards.ABOUT_SCHOOL,
-        'WHO_SUITS': ReplyKeyboards.WHO_SUITS
-    }
-
-
-class Level2(Level):
-    MENU_OPTIONS = {
-
-    }
-    # 'FAQ_OPTIONS': {
-    #     'ABOUT_SCHOOL': 'Про школу',
-    #     'WHO_SUITS': 'Кому підійде',
-    #     'MONEY': 'Оплата'
-    # },
-    # 'ABOUT_SHOOL_OPTIONS': {
-    #     'WHO_WE_ARE': 'Хто ми і заради чого збір',
-    #     'BENEFITS': 'Для чого це Вам?',
-    #     'HOW': 'Як ми це плануємо зробити?'
-    # },
-    # 'WHO_SUITS_OPTIONS': {
-    #     'WHY': 'Some text',
-    #     'LIST': 'Some text 2'
-    # }
+# class Level:
+#     MENU_OPTIONS: dict = None
+#     KEYBOARDS: dict = None
+#
+#
+# class Level1(Level):
+#     MENU_OPTIONS = {
+#         'STATUS': 'Show status',
+#         'FAQ': 'Get FAQ',
+#         'APPLY': 'Apply for lesson'
+#     }
+#     KEYBOARDS = {
+#         'FAQ': ReplyKeyboards.FAQ,
+#         'ABOUT_SCHOOL': ReplyKeyboards.ABOUT_SCHOOL,
+#         'WHO_SUITS': ReplyKeyboards.WHO_SUITS
+#     }
+#
+#
+# class Level2(Level):
+#     MENU_OPTIONS = {
+#
+#     }
+# 'FAQ_OPTIONS': {
+#     'ABOUT_SCHOOL': 'Про школу',
+#     'WHO_SUITS': 'Кому підійде',
+#     'MONEY': 'Оплата'
+# },
+# 'ABOUT_SHOOL_OPTIONS': {
+#     'WHO_WE_ARE': 'Хто ми і заради чого збір',
+#     'BENEFITS': 'Для чого це Вам?',
+#     'HOW': 'Як ми це плануємо зробити?'
+# },
+# 'WHO_SUITS_OPTIONS': {
+#     'WHY': 'Some text',
+#     'LIST': 'Some text 2'
+# }
