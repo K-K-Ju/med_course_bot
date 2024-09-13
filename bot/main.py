@@ -57,7 +57,7 @@ async def register(client: Client, message: Message):
 
     app_user = AppUserDAO(user_id, message.chat.id,
                           message.from_user.username, first_name,
-                          phone_number, State.REGISTERED)
+                          phone_number, State.BASE)
     db.add_user(app_user)
     logger.debug(f'Registered new user id={user_id}')
     await client.send_message(message.chat.id, 'You are now registered')
@@ -99,6 +99,3 @@ async def answer(client, message: Message):
         await client.send_message(chat_id, 'Wait until manager contacts you via bot')
     elif message.text == MenuOptions.START_MENU.MENU:
         await send_menu(client, message)
-
-
-app.run()

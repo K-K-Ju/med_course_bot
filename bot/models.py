@@ -40,16 +40,15 @@ class LessonDAO(DAO):
         TextField("$.description", as_name="description"),
     )
 
-    def __init__(self, _title_, _date_, _time_, _price_, _description_):
+    def __init__(self, _title_, _datetime_, _price_, _description_):
         self.title = _title_
-        self.date = _date_
-        self.time = _time_
+        self.datetime = _datetime_
         self.price = _price_
         self.description = _description_
 
     @staticmethod
     def from_redis_dict(d: dict):
-        LessonDAO(d['id'], d['date'], d['time'], d['price'], d['description'])
+        LessonDAO(d['id'], d['datetime'], int(d['price']), d['description'])
 
 
 class AppClient:

@@ -12,7 +12,7 @@ class MenuOptions:
         APPLY = '✅Запис на заняття'
         REGISTER = '✒️Реєстрація'
         CONTACT_MANAGER = '✋Зв\'язатись з менеджером'
-        MENU = '📔Menu state'
+        MENU = '📔Головне меню'
 
     class FAQ_OPTIONS:
         ABOUT_SCHOOL = 'Про школу'
@@ -30,10 +30,11 @@ class MenuOptions:
 
     class ADMIN_OPTIONS:
         CONTACT_USER = '☎️Зв\'язатися з очікуючим користувачем'
-        EXPORT_TABLE = 'Export users data to Excel table'
+        EXPORT_TABLE = 'ℹ️Export users data to Excel table'
         FIND_USER = '🔍Отримати дані про користувача через id, моб. теле. або @username'
         ADD_LESSON = '➡️Додати занятя'
         GET_LESSONS = '⬇️Список занять'
+        EXIT = '🔧Exit panel'
 
 
 class ReplyKeyboards:
@@ -85,7 +86,7 @@ class AdminReplyKeyboards:
     START = ReplyKeyboardMarkup([
         [KeyboardButton(MenuOptions.ADMIN_OPTIONS.FIND_USER), KeyboardButton(MenuOptions.ADMIN_OPTIONS.CONTACT_USER)],
         [KeyboardButton(MenuOptions.ADMIN_OPTIONS.ADD_LESSON), KeyboardButton(MenuOptions.ADMIN_OPTIONS.GET_LESSONS)],
-        [KeyboardButton(MenuOptions.ADMIN_OPTIONS.EXPORT_TABLE)],
+        [KeyboardButton(MenuOptions.ADMIN_OPTIONS.EXPORT_TABLE), KeyboardButton(MenuOptions.ADMIN_OPTIONS.EXIT)],
     ], is_persistent=True,
         placeholder=MenuOptions.PLACEHOLDER,
         resize_keyboard=True)

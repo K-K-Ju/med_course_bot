@@ -35,3 +35,5 @@ AppClient(name="Surgeon Course Bot", lang='ua')
 
 import admin
 import main
+
+AppClient.client.run()
