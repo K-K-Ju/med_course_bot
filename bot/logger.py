@@ -22,3 +22,22 @@ class CustomFormatter(logging.Formatter):
         formatter = logging.Formatter(log_fmt)
         return formatter.format(record)
 
+
+def prepare_logger(level, log_file_path):
+    log = logging.getLogger('main_logger')
+    log.setLevel(level)
+    fmtr = CustomFormatter()
+    ch = logging.StreamHandler()
+    fh = logging.FileHandler(filename=log_file_path, mode='a+', encoding='utf-8')
+
+    ch.setLevel(level)
+    fh.setLevel(level)
+
+    ch.setFormatter(fmtr)
+    fh.setFormatter(
+        logging.Formatter(fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s (%(filename)s:%(lineno)d)"))
+
+    log.addHandler(ch)
+    log.addHandler(fh)
+
+    log.info('Logger configured...')

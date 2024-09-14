@@ -5,26 +5,22 @@ from pyrogram import filters
 from pyrogram.types import Message
 from pyromod import Client
 
-import bot.main
-from bot.custom_filters import first_is_emoji
-from bot import config
-import bot.db_driver as db
+import bot
+import bot.user.db_driver as __db__
 import bot.admin.db_driver as admin_db_driver
 from bot.models import AppClient, LessonDAO
 from bot.static.keyboards import AdminReplyKeyboards, MenuOptions
 from bot.static.states import State
-from bot.custom_filters import is_admin
 
 app = AppClient.client
-admin_db = admin_db_driver.AdminDb()
-db = db.Db()
+__admin_db__ = admin_db_driver.AdminDb()
+__db__ = __db__.Db()
 log = logging.getLogger()
 
 
-@app.on_message(filters.regex(config.config['ADMIN_KEY']), group=-1)
 async def admin_start(c: Client, msg: Message):
     chat_id = msg.chat.id
-    admin_db.set_admin_state(chat_id, State.ACTIVE_ADMIN)
+    __admin_db__.set_admin_state(chat_id, State.ACTIVE_ADMIN)
     await c.send_message(chat_id, 'Welcome admin')
     await send_admin_menu(c, msg)
 
@@ -36,20 +32,19 @@ async def send_admin_menu(c: Client, msg: Message):
     # await process(c, opt)
 
 
-@app.on_message(filters.text & filters.private & first_is_emoji & is_admin, group=-1)
 async def process(c: Client, msg: Message):
     text = msg.text
     if text == MenuOptions.ADMIN_OPTIONS.CONTACT_USER:
-        pending_users = db.get_users_with_state(State.PENDING_MANAGER)
+        pending_users = __db__.get_users_with_state(State.PENDING_MANAGER)
         # TODO choosing option and passing to function
     elif text == MenuOptions.ADMIN_OPTIONS.ADD_LESSON:
         await add_lesson(c, msg)
     elif text == MenuOptions.ADMIN_OPTIONS.GET_LESSONS:
         await view_lessons(c, msg)
     elif text == MenuOptions.ADMIN_OPTIONS.EXIT:
-        admin_db.set_admin_state(msg.from_user.id, State.BASE)
+        __admin_db__.set_admin_state(msg.from_user.id, State.BASE)
         await c.send_message(msg.chat.id, 'You exited admin panel')
-        await bot.main.send_menu(c, msg)
+        await bot.user.handlers.send_menu(c, msg)
         return
 
     msg.stop_propagation()
@@ -57,8 +52,9 @@ async def process(c: Client, msg: Message):
 
 
 async def view_lessons(c: Client, msg: Message):
-    lessons = admin_db.get_lessons()
+    lessons = __admin_db__.get_lessons()
     print(lessons)
+    await c.send_message(msg.chat.id, str(lessons))
 
 
 async def add_lesson(c: Client, msg: Message):
@@ -79,7 +75,7 @@ async def add_lesson(c: Client, msg: Message):
     price = (await c.ask(chat_id, 'Enter lesson price', filters=filters.private)).text
     description = (await c.ask(chat_id, 'Enter lesson description', filters=filters.private)).text
 
-    admin_db.add_lesson(LessonDAO(title, str_datetime, price, description))
+    __admin_db__.add_lesson(LessonDAO(title, str_datetime, price, description))
 
     await c.send_message(chat_id, f'Lesson added - {title}')
     await send_admin_menu(c, msg)

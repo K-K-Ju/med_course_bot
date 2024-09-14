@@ -28,7 +28,8 @@ class AppUserDAO(DAO):
 
     @staticmethod
     def from_redis_dict(d: dict):
-        AppUserDAO(d['user_id'], d['chat_id'], d['username'], d['name'], d['phone_number'], State(int(d['state'], 2)))
+        return AppUserDAO(d['user_id'], d['chat_id'], d['username'], d['name'], d['phone_number'],
+                          State(int(d['state'], 2)))
 
 
 class LessonDAO(DAO):
@@ -48,11 +49,15 @@ class LessonDAO(DAO):
 
     @staticmethod
     def from_redis_dict(d: dict):
-        LessonDAO(d['id'], d['datetime'], int(d['price']), d['description'])
+        ls = LessonDAO(d['id'],
+                       d[b'datetime'].decode('utf-8'),
+                       int(d[b'price'].decode('utf-8')), d[b'description'].decode('utf-8'))
+
+        return ls
 
 
 class AppClient:
-    client = None
+    client: Client = None
 
     def __init__(self, name, lang):
         AppClient.client = Client(name=name, lang_code=lang)

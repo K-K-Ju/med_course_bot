@@ -51,8 +51,9 @@ class AdminDb:
     def get_lessons(self):
         lessons = []
         ids = self.__r_lessons__.scan()
-        for idx in ids:
+        for idx in ids[1:-1]:
             lesson = self.__r_lessons__.hgetall(idx)
+            lesson['id'] = idx.decode('utf-8')
             lessons.append(LessonDAO.from_redis_dict(lesson))
 
         return lessons
