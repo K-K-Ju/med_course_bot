@@ -28,8 +28,8 @@ class AppUserDAO(DAO):
 
     @staticmethod
     def from_redis_dict(d: dict):
-        return AppUserDAO(d['user_id'], d['chat_id'], d['username'], d['name'], d['phone_number'],
-                          State(int(d['state'], 2)))
+        return AppUserDAO(d[b'user_id'], d[b'chat_id'], d[b'username'], d[b'name'], d[b'phone_number'],
+                          State(int(d[b'state'].decode('utf-8'))))
 
 
 class LessonDAO(DAO):
@@ -41,17 +41,18 @@ class LessonDAO(DAO):
         TextField("$.description", as_name="description"),
     )
 
-    def __init__(self, _title_, _datetime_, _price_, _description_):
+    def __init__(self, _title_, _datetime_, _price_, _description_, **kwargs):
         self.title = _title_
         self.datetime = _datetime_
         self.price = _price_
         self.description = _description_
+        self.id = kwargs['_id_']
 
     @staticmethod
     def from_redis_dict(d: dict):
-        ls = LessonDAO(d['id'],
+        ls = LessonDAO(d[b'title'].decode('utf-8'),
                        d[b'datetime'].decode('utf-8'),
-                       int(d[b'price'].decode('utf-8')), d[b'description'].decode('utf-8'))
+                       int(d[b'price'].decode('utf-8')), d[b'description'].decode('utf-8'), _id_=d['id'])
 
         return ls
 

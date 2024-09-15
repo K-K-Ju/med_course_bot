@@ -53,8 +53,11 @@ async def process(c: Client, msg: Message):
 
 async def view_lessons(c: Client, msg: Message):
     lessons = __admin_db__.get_lessons()
-    print(lessons)
-    await c.send_message(msg.chat.id, str(lessons))
+    s = ''
+    for l in lessons:
+        s += f'{l.title} - {l.datetime} - {l.price}\n'
+
+    await c.send_message(msg.chat.id, s)
 
 
 async def add_lesson(c: Client, msg: Message):
