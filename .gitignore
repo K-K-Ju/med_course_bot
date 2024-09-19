@@ -120,11 +120,10 @@ cmake-build-*/
 .idea
 
 ################################### Custom ###################################
-/bot/Surgeon Course Bot.session-journal
-/bot/Surgeon Course Bot.session
+/bot/*.session-journal
+/bot/*.session
 
 /*.log
 /*.db
 /.gspread_config/
 /secrets.json
-/bot/Gsheet.py

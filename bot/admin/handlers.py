@@ -6,15 +6,17 @@ from pyrogram.types import Message
 from pyromod import Client
 
 import bot
-import bot.user.db_driver as __db__
-import bot.admin.db_driver as admin_db_driver
+from bot.db_driver import LessonDb
+from bot.user.db_driver import UserDb
+from bot.admin.db_driver import AdminDb
 from bot.models import AppClient, LessonDAO
 from bot.static.keyboards import AdminReplyKeyboards, MenuOptions
 from bot.static.states import State
 
 app = AppClient.client
-__admin_db__ = admin_db_driver.AdminDb()
-__db__ = __db__.Db()
+__admin_db__ = AdminDb()
+__db__ = UserDb()
+__lesson_db__ = LessonDb()
 log = logging.getLogger()
 
 
@@ -35,7 +37,7 @@ async def send_admin_menu(c: Client, msg: Message):
 async def process(c: Client, msg: Message):
     text = msg.text
     if text == MenuOptions.ADMIN_OPTIONS.CONTACT_USER:
-        pending_users = __db__.get_users_with_state(State.PENDING_MANAGER)
+        pending_users = __db__.get_users_by_state(State.PENDING_MANAGER)
         # TODO choosing option and passing to function
     elif text == MenuOptions.ADMIN_OPTIONS.ADD_LESSON:
         await add_lesson(c, msg)
@@ -52,7 +54,7 @@ async def process(c: Client, msg: Message):
 
 
 async def view_lessons(c: Client, msg: Message):
-    lessons = __admin_db__.get_lessons()
+    lessons = __lesson_db__.get_lessons()
     s = ''
     for l in lessons:
         s += f'{l.title} - {l.datetime} - {l.price}\n'
@@ -78,7 +80,7 @@ async def add_lesson(c: Client, msg: Message):
     price = (await c.ask(chat_id, 'Enter lesson price', filters=filters.private)).text
     description = (await c.ask(chat_id, 'Enter lesson description', filters=filters.private)).text
 
-    __admin_db__.add_lesson(LessonDAO(title, str_datetime, price, description))
+    __lesson_db__.add_lesson(LessonDAO(title, str_datetime, price, description))
 
     await c.send_message(chat_id, f'Lesson added - {title}')
     await send_admin_menu(c, msg)

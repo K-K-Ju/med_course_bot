@@ -1,60 +1,104 @@
-from redis.commands.search.field import TextField, TagField, NumericField
+from enum import Enum
 
 from bot.static.states import State
 from pyromod import Client
 
 
 class DAO:
+
     @staticmethod
-    def from_redis_dict(d: dict):
+    def default():
+        pass
+
+    @staticmethod
+    def from_json(d: dict):
+        TypeError()
+
+    @staticmethod
+    def to_json_dict(dao):
         TypeError()
 
 
-class AppUserDAO(DAO):
-    schema = (
-        TextField("$.chat_id", as_name="name"),
-        TextField("$.username", as_name="username"),
-        TextField("$.phone_number", as_name="phone_number"),
-        NumericField("$.state", as_name="state")
-    )
-
-    def __init__(self, _user_id_, _chat_id_, _username_, _name_, _phone_number_, _state_: State):
-        self.user_id = _user_id_
-        self.chat_id = _chat_id_
+class ClientDAO(DAO):
+    def __init__(self, _id_, _username_, _name_, _phone_number_, _state_: State):
+        self.id = _id_
         self.user_name = _username_
         self.name = _name_
         self.phone_number = _phone_number_
         self.state = _state_
 
     @staticmethod
-    def from_redis_dict(d: dict):
-        return AppUserDAO(d[b'user_id'], d[b'chat_id'], d[b'username'], d[b'name'], d[b'phone_number'],
-                          State(int(d[b'state'].decode('utf-8'))))
+    def default():
+        return ClientDAO(0, 'default', '', '', State.NOT_REGISTERED)
+
+    @staticmethod
+    def from_json(d: dict):
+        return ClientDAO(d['id'], d['username'], d['name'], d['phone_number'],
+                         State(int(d['state'])))
+
+    @staticmethod
+    def to_json_dict(dao):
+        return {
+            'id': dao.id,
+            'username': dao.user_name,
+            'name': dao.name,
+            'phone_number': dao.phone_number,
+            'state': dao.state.value
+        }
 
 
 class LessonDAO(DAO):
-    schema = (
-        TextField("$.title", as_name="title"),
-        TextField("$.date", as_name="date"),
-        TextField("$.time", as_name="time"),
-        NumericField("$.price", as_name="price"),
-        TextField("$.description", as_name="description"),
-    )
-
-    def __init__(self, _title_, _datetime_, _price_, _description_, **kwargs):
+    def __init__(self, _title_, _datetime_, _price_, _description_, _id_=0):
         self.title = _title_
         self.datetime = _datetime_
         self.price = _price_
         self.description = _description_
-        self.id = kwargs['_id_']
+        self.id = _id_
 
     @staticmethod
-    def from_redis_dict(d: dict):
-        ls = LessonDAO(d[b'title'].decode('utf-8'),
-                       d[b'datetime'].decode('utf-8'),
-                       int(d[b'price'].decode('utf-8')), d[b'description'].decode('utf-8'), _id_=d['id'])
+    def default():
+        return LessonDAO('default', 'default', 0, '')
+
+    @staticmethod
+    def from_json(d):
+        ls = LessonDAO(d['title'],
+                       d['datetime'],
+                       int(d['price']), d['description'], _id_=d['id'])
 
         return ls
+
+    @staticmethod
+    def to_json_dict(dao):
+        return {
+            'title': dao.title,
+            'datetime': dao.datetime,
+            'price': dao.price,
+            'description': dao.description
+        }
+
+
+class ApplyDAO(DAO):
+    def __init__(self, _user_id_, _lesson_id_, _state_: State, _id_=0):
+        self.user_id = _user_id_
+        self.lesson_id = _lesson_id_
+        self.state = _state_
+        self.id = _id_
+
+    @staticmethod
+    def default():
+        return ApplyDAO(0, 0, State.NOT_REGISTERED)
+
+    @staticmethod
+    def from_json(d: dict):
+        return ApplyDAO(int(d['user_id']), int(d['lesson_id']), State(d['state']), _id_=d['id'])
+
+    @staticmethod
+    def to_json_dict(dao):
+        return {
+            'user_id': dao.user_id,
+            'lesson_id': dao.lesson_id,
+            'state': dao.state.value
+        }
 
 
 class AppClient:
@@ -62,3 +106,16 @@ class AppClient:
 
     def __init__(self, name, lang):
         AppClient.client = Client(name=name, lang_code=lang)
+
+
+class Res:
+    def __init__(self, _val_):
+        self.val = _val_
+
+
+class Ok(Res):
+    pass
+
+
+class Error(Res):
+    pass
