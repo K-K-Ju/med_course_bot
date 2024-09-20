@@ -19,7 +19,7 @@ class AdminDb:
 
     def is_admin(self, user_id):
         logger.debug(f'Checking whether {user_id} is admin')
-        res = self.__r_json__.get('bot:users', f'$.user.admins[?(@.id=={user_id})].id')
+        res = self.__r_json__.get('bot:users', f'$.users.admins[?(@.id=={user_id})].id')
 
         if len(res) == 1:
             return True
@@ -27,12 +27,11 @@ class AdminDb:
             return False
 
     def get_state(self, user_id) -> State:
-        res = run_query(lambda: self.__r_json__.get('bot:users' f'$.users.admins[?(@.id=={user_id})].state'))
-        if res is Ok:
-            state_str = res.val[0]
-            return State(int(state_str))
+        res = self.__r_json__.get('bot:users', f'$.users.admins[?(@.id=={user_id})].state')
+        if len(res) == 1:
+            return State(res[0])
         else:
             return State.NOT_REGISTERED
 
     def set_admin_state(self, user_id, state: State):
-        self.__r_json__.set('bot:users' f'$.users.admins[?(@.id=={user_id})].state', f'{state.value}')
+        self.__r_json__.set('bot:users', f'$.users.admins[?(@.id=={user_id})].state', state.value)

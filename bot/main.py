@@ -48,7 +48,7 @@ app = AppClient.client
 app.add_handler(MessageHandler(admin_handlers.admin_start,
                                (filters.regex(config.config['ADMIN_KEY']))), group=-1)
 app.add_handler(MessageHandler(admin_handlers.process,
-                               (is_admin(bot.admin.db_driver.AdminDb()) & filters.text & filters.private & first_is_emoji)))
+                               (is_admin(bot.admin.db_driver.AdminDb()) & filters.private & first_is_emoji)))
 
 app.add_handler(MessageHandler(handlers.send_start, (filters.command('start') & filters.private)))
 app.add_handler(MessageHandler(handlers.answer, (filters.text & filters.private & first_is_emoji)), group=-1)
