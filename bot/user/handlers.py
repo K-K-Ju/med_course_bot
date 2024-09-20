@@ -1,3 +1,4 @@
+import json
 import logging
 
 from pyrogram import filters
@@ -6,22 +7,23 @@ from pyrogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, InlineK
 from pyromod import Client
 from pyromod.types import ListenerTypes
 
-from bot.models import AppClient
+from bot.models import AppClient, ApplyDAO
 from bot.models import ClientDAO
 from bot.static.keyboards import (
     MenuOptions,
     ReplyKeyboards
 )
 from bot.static.messages import Messages
-from bot.static.states import State
+from bot.static.states import State, ApplyState
 from bot.user.db_driver import UserDb
-from bot.db_driver import LessonDb
+from bot.db_driver import LessonDb, ApplyDb
 
 logger = logging.getLogger('main_logger')
 logger.info('Test logger')
 app = AppClient.client
 __db__ = UserDb()
 __lessons_db__ = LessonDb()
+__apply_db__ = ApplyDb()
 
 
 async def send_start(c: Client, msg: Message):
@@ -83,15 +85,24 @@ async def __get_phone_number__(c, msg):
 
 async def __send_lessons_list__(c: Client, chat_id):
     lessons = __lessons_db__.get_lessons()
+    # TODO filtration
     for l in lessons:
+        data = {'user_id': chat_id, 'lesson_id': l.id}
+        data_json = json.dumps(data)
         await c.send_message(chat_id, f'Title - {l.title}\nPrice - {l.description}',
                              reply_markup=InlineKeyboardMarkup([
-                                 [InlineKeyboardButton('Записатись', callback_data=f'id={l.id}')]
+                                 [InlineKeyboardButton('Записатись', callback_data=data_json)]
                              ]))
 
 
 async def apply(c: Client, query: CallbackQuery):
-    id = int(query.data.split('=')[1])
+    data = json.loads(query.data)
+    a = ApplyDAO(data['user_id'], data['lesson_id'], ApplyState.NEW)
+    success = __apply_db__.add_apply(a)
+    if success:
+        await c.send_message(data['user_id'], 'You are applied')
+    else:
+        await c.send_message(data['user_id'], 'Some problem with applying. Try later or contact manager')
 
 
 async def answer(c, msg: Message):

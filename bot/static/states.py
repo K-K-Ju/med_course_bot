@@ -7,3 +7,9 @@ class State(Enum):
     PENDING_MANAGER = 11
     ACTIVE_ADMIN = 21
 
+
+class ApplyState(Enum):
+    NEW = 0
+    BOOKED = 1
+    CONFIRMED = 2
+    DECLINED = 3

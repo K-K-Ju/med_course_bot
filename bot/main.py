@@ -27,9 +27,7 @@ def prepare_db():
             'bot:applies': '{"applies": []}'}
 
     for doc_name, doc_struct in docs.items():
-        res = r.json().get(doc_name, '$')
-        if not res:
-            r.json().set(doc_name, '$', doc_struct)
+        r.json().set(doc_name, '$', doc_struct, nx=True)
 
     print('Testing database...')
     test_key, test_value = 'test_key', 100
@@ -54,7 +52,8 @@ app.add_handler(MessageHandler(handlers.send_start, (filters.command('start') & 
 app.add_handler(MessageHandler(handlers.answer, (filters.text & filters.private & first_is_emoji)), group=-1)
 app.add_handler(MessageHandler(handlers.send_menu, (filters.command('menu') & filters.private)))
 app.add_handler(MessageHandler(handlers.show_status, (filters.command('status'))))
-app.add_handler(CallbackQueryHandler(handlers.apply, (filters.private & filters.regex('id=[0-9]+'))))
+app.add_handler(CallbackQueryHandler(handlers.apply,
+                                     (filters.regex(r'{(((\"user_id\":\s\d{9})|(\"lesson_id\":\s\"lesson:\d+\"))(\, )?){2}}'))))
 
 
 AppClient.client.run()

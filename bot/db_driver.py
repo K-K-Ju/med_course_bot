@@ -37,19 +37,19 @@ class LessonDb:
         return lessons
 
 
-class ApplyDB:
+class ApplyDb:
     def __init__(self):
         self.__r__ = redis.Redis(connection_pool=redis_pool)
         self.__r_json__ = self.__r__.json()
         self.APPLY_ID_GEN = 'apply_id_gen'
-        if len(self.__r_json__.get('bot:applies', '$')) != 1:
-            self.__r_json__.set('bot:applies', '$', '[]')
+        self.__r__.set(self.APPLY_ID_GEN, 0, nx=True)
 
     def add_apply(self, apply: ApplyDAO):
-        # apply_id = str(int(self.__r__.get(self.APPLY_ID_GEN), 2))
-        idx = self.__r_json__.arrlen('bot:applies', '$') + 1
-        apply.id = idx
-        self.__r_json__.arrappend('bot:applies', '$', ApplyDAO.to_json_dict(apply))
+        apply_id = 'apply:'+str(int(self.__r__.get(self.APPLY_ID_GEN), 2))
+        apply.id = apply_id
+        res = self.__r_json__.arrappend('bot:applies', '$.applies', ApplyDAO.to_json_dict(apply)) is not None
+        self.__r__.incrby(self.APPLY_ID_GEN, 1)
+        return res
 
     def set_apply_state(self, apply_id: str, state: State):
-        self.__r__.hset(apply_id, 'state', state.value)
+        self.__r_json__.set('bot:applies', f'$.applies[?(@.id="{apply_id}")].state', state.value)

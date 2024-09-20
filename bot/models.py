@@ -1,6 +1,6 @@
 from enum import Enum
 
-from bot.static.states import State
+from bot.static.states import State, ApplyState
 from pyromod import Client
 
 
@@ -79,7 +79,7 @@ class LessonDAO(DAO):
 
 
 class ApplyDAO(DAO):
-    def __init__(self, _user_id_, _lesson_id_, _state_: State, _id_=0):
+    def __init__(self, _user_id_, _lesson_id_, _state_: ApplyState, _id_=0):
         self.user_id = _user_id_
         self.lesson_id = _lesson_id_
         self.state = _state_
@@ -87,18 +87,19 @@ class ApplyDAO(DAO):
 
     @staticmethod
     def default():
-        return ApplyDAO(0, 0, State.NOT_REGISTERED)
+        return ApplyDAO(0, 0, ApplyState.NEW)
 
     @staticmethod
     def from_json(d: dict):
-        return ApplyDAO(int(d['user_id']), int(d['lesson_id']), State(d['state']), _id_=d['id'])
+        return ApplyDAO(int(d['user_id']), int(d['lesson_id']), ApplyState(d['state']), _id_=d['id'])
 
     @staticmethod
     def to_json_dict(dao):
         return {
             'user_id': dao.user_id,
             'lesson_id': dao.lesson_id,
-            'state': dao.state.value
+            'state': dao.state.value,
+            'id': dao.id
         }
 
 
