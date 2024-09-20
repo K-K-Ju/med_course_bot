@@ -1,3 +1,4 @@
+import json
 import logging
 import redis
 
@@ -37,7 +38,7 @@ class UserDb:
     def get_users_by_state(self, state: State):
         res = self.__r_json__.get('bot.users', f'$.users.clients[?(@.state={state.value})]')
         clients_json_arr = res.val
-        clients = [ClientDAO.from_json(c) for c in clients_json_arr]
+        clients = [ClientDAO.from_json(json.loads(c)) for c in clients_json_arr]
         return clients
 
     def set_state(self, user_id, state: State):

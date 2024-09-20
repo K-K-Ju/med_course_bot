@@ -73,7 +73,8 @@ class LessonDAO(DAO):
             'title': dao.title,
             'datetime': dao.datetime,
             'price': dao.price,
-            'description': dao.description
+            'description': dao.description,
+            'id': dao.id
         }
 
 
