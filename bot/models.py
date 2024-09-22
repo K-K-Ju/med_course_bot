@@ -1,5 +1,3 @@
-from enum import Enum
-
 from bot.static.states import State, ApplyState
 from pyromod import Client
 

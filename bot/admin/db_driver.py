@@ -11,9 +11,9 @@ logger = logging.getLogger('main_logger')
 
 
 class AdminDb:
-    def __init__(self):
+    def __init__(self, _connection_pool_=redis_pool):
         logger.info('Preparing admin db driver...')
-        self.__r__ = redis.StrictRedis(connection_pool=redis_pool)
+        self.__r__ = redis.StrictRedis(connection_pool=_connection_pool_)
         self.__r_json__ = self.__r__.json()
         logger.info('Admin db preparing is finished')
 

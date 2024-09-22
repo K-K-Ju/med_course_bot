@@ -1,4 +1,3 @@
-import json
 import logging
 
 import redis
@@ -11,8 +10,8 @@ logger = logging.getLogger('main_logger')
 
 
 class LessonDb:
-    def __init__(self):
-        self.__r__ = redis.Redis(connection_pool=redis_pool)
+    def __init__(self, _connection_pool_=redis_pool):
+        self.__r__ = redis.Redis(connection_pool=_connection_pool_)
         self.__r_json__ = self.__r__.json()
         self.LESSON_ID_GEN = 'lesson_id_gen'
         if not self.__r__.get(self.LESSON_ID_GEN):
@@ -38,8 +37,8 @@ class LessonDb:
 
 
 class ApplyDb:
-    def __init__(self):
-        self.__r__ = redis.Redis(connection_pool=redis_pool)
+    def __init__(self, _connection_pool_=redis_pool):
+        self.__r__ = redis.Redis(connection_pool=_connection_pool_)
         self.__r_json__ = self.__r__.json()
         self.APPLY_ID_GEN = 'apply_id_gen'
         self.__r__.set(self.APPLY_ID_GEN, 0, nx=True)
