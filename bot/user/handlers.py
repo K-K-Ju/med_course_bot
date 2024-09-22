@@ -38,7 +38,7 @@ async def send_menu(c, msg):
         keyboard = ReplyKeyboards.START
 
     await c.send_message(msg.chat.id,
-                         'Choose desirable option',
+                         'Оберіть потрібний пункт меню👇',
                          reply_markup=keyboard)
 
 
@@ -53,7 +53,7 @@ async def register(c: Client, msg: Message):
         await c.send_message(msg.chat.id, Messages.USE_MENU_REGISTRATION)
         return
 
-    first_name = (await c.ask(msg.chat.id, 'Enter your name', filters=filters.text)).text
+    first_name = (await c.ask(msg.chat.id, 'Введіть ваше ім\'я', filters=filters.text)).text
     phone_number = await __get_phone_number__(c, msg)
 
     app_user = ClientDAO(msg.chat.id,
@@ -61,7 +61,7 @@ async def register(c: Client, msg: Message):
                          phone_number, State.BASE)
     __db__.add(app_user)
     logger.debug(f'Registered new user id={user_id}')
-    await c.send_message(msg.chat.id, 'You are now registered')
+    await c.send_message(msg.chat.id, 'Ви успішно зараєструвались! Тепер вам доступно більше функцій😉')
     await send_menu(c, msg)
 
 
@@ -70,10 +70,10 @@ async def __get_phone_number__(c, msg):
         return msg.contact.phone_number
     else:
         await msg.reply(
-            text='Allow to view your phone',
+            text='Дозвольте прочитати ваш номер телефону👉👈',
             reply_markup=ReplyKeyboardMarkup(
                 [
-                    [KeyboardButton('Share mobile', request_contact=True)],
+                    [KeyboardButton('Поділитись', request_contact=True)],
                 ],
                 resize_keyboard=True,
             ),
@@ -100,9 +100,10 @@ async def apply(c: Client, query: CallbackQuery):
     a = ApplyDAO(data['user_id'], data['lesson_id'], ApplyState.NEW)
     success = __apply_db__.add_apply(a)
     if success:
-        await c.send_message(data['user_id'], 'You are applied')
+        await c.send_message(data['user_id'], 'Ви записались на урок')
     else:
-        await c.send_message(data['user_id'], 'Some problem with applying. Try later or contact manager')
+        logger.error(f'Error while applying - {query.from_user.id=}, {a.lesson_id=}')
+        await c.send_message(data['user_id'], 'Виникла помилка. Спробуйте пізніше або зв\'яжіться з менеджером')
 
 
 async def answer(c, msg: Message):
@@ -118,6 +119,6 @@ async def answer(c, msg: Message):
     elif msg.text == MenuOptions.START_MENU.CONTACT_MANAGER:
         user_id = msg.from_user.id
         __db__.set_state(user_id, State.PENDING_MANAGER)
-        await c.send_message(chat_id, 'Wait until manager contacts you via bot')
+        await c.send_message(chat_id, 'Зачекайте поки менеджер зв\'яжиться з вами через бота')
     elif msg.text == MenuOptions.START_MENU.MENU:
         await send_menu(c, msg)

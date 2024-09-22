@@ -23,13 +23,13 @@ log = logging.getLogger()
 async def admin_start(c: Client, msg: Message):
     chat_id = msg.chat.id
     __admin_db__.set_admin_state(chat_id, State.ACTIVE_ADMIN)
-    await c.send_message(chat_id, 'Welcome admin')
+    await c.send_message(chat_id, 'Вітаю, адмін!')
     await send_admin_menu(c, msg)
 
 
 async def send_admin_menu(c: Client, msg: Message):
     chat_id = msg.chat.id
-    await c.send_message(msg.chat.id, 'Choose option', reply_markup=AdminReplyKeyboards.START)
+    await c.send_message(msg.chat.id, 'Оберіть пункт меню', reply_markup=AdminReplyKeyboards.START)
     # opt = await c.listen(chat_id=chat_id)
     # await process(c, opt)
 
@@ -45,12 +45,11 @@ async def process(c: Client, msg: Message):
         await view_lessons(c, msg)
     elif text == MenuOptions.ADMIN_OPTIONS.EXIT:
         __admin_db__.set_admin_state(msg.from_user.id, State.BASE)
-        await c.send_message(msg.chat.id, 'You exited admin panel')
+        await c.send_message(msg.chat.id, 'Ви вийшли з панелі адміна')
         await bot.user.handlers.send_menu(c, msg)
         return
 
     msg.stop_propagation()
-    # await send_admin_menu(c, msg)
 
 
 async def view_lessons(c: Client, msg: Message):
@@ -64,9 +63,11 @@ async def view_lessons(c: Client, msg: Message):
 
 async def add_lesson(c: Client, msg: Message):
     chat_id = msg.chat.id
-    title = (await c.ask(chat_id, 'Enter lesson title', filters=filters.private)).text
+    title = (await c.ask(chat_id, "Введіть назву уроку", filters=filters.private)).text
     while True:
-        str_datetime = (await c.ask(chat_id, 'Enter date and time in format "dd.mm.yyyy hh:mm"', filters=filters.private)).text
+        str_datetime = (await c.ask(chat_id,
+                                    'Введіть дату і час проведення у форматі "01.01.2024 10:00"',
+                                    filters=filters.private)).text
         if str_datetime == '.':
             break
 
@@ -75,12 +76,12 @@ async def add_lesson(c: Client, msg: Message):
             break
         except ValueError:
             log.error(f'Error while parsing datetime from user - {str_datetime}')
-            await c.send_message(chat_id, 'Incorrect format')
+            await c.send_message(chat_id, 'Невірний формат дати або часу')
 
-    price = (await c.ask(chat_id, 'Enter lesson price', filters=filters.private)).text
-    description = (await c.ask(chat_id, 'Enter lesson description', filters=filters.private)).text
+    price = (await c.ask(chat_id, 'Введіть ціну уроку', filters=filters.private)).text
+    description = (await c.ask(chat_id, 'Введіть опис уроку', filters=filters.private)).text
 
     __lesson_db__.add_lesson(LessonDAO(title, str_datetime, price, description))
 
-    await c.send_message(chat_id, f'Lesson added - {title}')
+    await c.send_message(chat_id, f'Урок доданий - {title}')
     await send_admin_menu(c, msg)
