@@ -15,13 +15,13 @@ from bot.static.keyboards import (
 )
 from bot.static.messages import Messages
 from bot.static.states import State, ApplyState
-from bot.user.db_driver import UserDb
+from bot.user.db_driver import ClientsDb
 from bot.db_driver import LessonDb, ApplyDb
 
 logger = logging.getLogger('main_logger')
 logger.info('Test logger')
 app = AppClient.client
-__db__ = UserDb()
+__db__ = ClientsDb()
 __lessons_db__ = LessonDb()
 __apply_db__ = ApplyDb()
 
@@ -43,7 +43,7 @@ async def send_menu(c, msg):
 
 
 async def show_status(c, msg: Message):
-    user = __db__.get_user(msg.from_user.id)
+    user = __db__.get(msg.from_user.id)
     # TODO print user status
 
 
@@ -98,7 +98,7 @@ async def __send_lessons_list__(c: Client, chat_id):
 async def apply(c: Client, query: CallbackQuery):
     data = json.loads(query.data)
     a = ApplyDAO(data['user_id'], data['lesson_id'], ApplyState.NEW)
-    success = __apply_db__.add_apply(a)
+    success = __apply_db__.add(a)
     if success:
         await c.send_message(data['user_id'], 'Ви записались на урок')
     else:

@@ -7,7 +7,7 @@ from pyromod import Client
 
 import bot
 from bot.db_driver import LessonDb
-from bot.user.db_driver import UserDb
+from bot.user.db_driver import ClientsDb
 from bot.admin.db_driver import AdminDb
 from bot.models import AppClient, LessonDAO
 from bot.static.keyboards import AdminReplyKeyboards, MenuOptions
@@ -15,7 +15,7 @@ from bot.static.states import State
 
 app = AppClient.client
 __admin_db__ = AdminDb()
-__db__ = UserDb()
+__db__ = ClientsDb()
 __lesson_db__ = LessonDb()
 log = logging.getLogger()
 
@@ -37,7 +37,7 @@ async def send_admin_menu(c: Client, msg: Message):
 async def process(c: Client, msg: Message):
     text = msg.text
     if text == MenuOptions.ADMIN_OPTIONS.CONTACT_USER:
-        pending_users = __db__.get_users_by_state(State.PENDING_MANAGER)
+        pending_users = __db__.get_by_state(State.PENDING_MANAGER)
         # TODO choosing option and passing to function
     elif text == MenuOptions.ADMIN_OPTIONS.ADD_LESSON:
         await add_lesson(c, msg)
@@ -81,7 +81,7 @@ async def add_lesson(c: Client, msg: Message):
     price = (await c.ask(chat_id, 'Введіть ціну уроку', filters=filters.private)).text
     description = (await c.ask(chat_id, 'Введіть опис уроку', filters=filters.private)).text
 
-    __lesson_db__.add_lesson(LessonDAO(title, str_datetime, price, description))
+    __lesson_db__.add(LessonDAO(title, str_datetime, price, description))
 
     await c.send_message(chat_id, f'Урок доданий - {title}')
     await send_admin_menu(c, msg)

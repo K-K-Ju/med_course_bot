@@ -1,20 +1,6 @@
+from bot.abstract import DAO
 from bot.static.states import State, ApplyState
 from pyromod import Client
-
-
-class DAO:
-
-    @staticmethod
-    def default():
-        pass
-
-    @staticmethod
-    def from_json(d: dict):
-        TypeError()
-
-    @staticmethod
-    def to_json_dict(dao):
-        TypeError()
 
 
 class ClientDAO(DAO):
@@ -89,7 +75,7 @@ class ApplyDAO(DAO):
 
     @staticmethod
     def from_json(d: dict):
-        return ApplyDAO(int(d['user_id']), int(d['lesson_id']), ApplyState(d['state']), _id_=d['id'])
+        return ApplyDAO(int(d['user_id']), d['lesson_id'], ApplyState(d['state']), _id_=d['id'])
 
     @staticmethod
     def to_json_dict(dao):

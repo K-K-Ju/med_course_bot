@@ -3,6 +3,7 @@ import logging
 import redis
 
 from bot import redis_pool
+from bot.abstract import AbstractDb
 from bot.models import ClientDAO, Ok, Error
 from bot.static.states import State
 from bot.utils import run_query
@@ -10,7 +11,7 @@ from bot.utils import run_query
 logger = logging.getLogger('main_logger')
 
 
-class UserDb:
+class ClientsDb(AbstractDb):
 
     def __init__(self):
         logger.info('Connecting to database...')
@@ -23,7 +24,7 @@ class UserDb:
         self.__r_json__.arrappend('bot:users', '$.users.clients', ClientDAO.to_json_dict(app_user))
         logger.debug(f'End adding user {app_user.id=}')
 
-    def get_user(self, user_id) -> ClientDAO:
+    def get(self, user_id) -> ClientDAO:
         logger.debug(f'Retrieving user by {user_id=}')
         res = run_query(lambda: self.__r_json__.get('bot:users', f'$.users.clients[?(@.id={user_id})]'))
 
@@ -35,7 +36,7 @@ class UserDb:
             logger.debug(f'End of retrieving user by {user_id=}')
             return ClientDAO.from_json(user_json)
 
-    def get_users_by_state(self, state: State):
+    def get_by_state(self, state: State):
         res = self.__r_json__.get('bot.users', f'$.users.clients[?(@.state={state.value})]')
         clients_json_arr = res.val
         clients = [ClientDAO.from_json(json.loads(c)) for c in clients_json_arr]
@@ -51,3 +52,7 @@ class UserDb:
             return True
         else:
             return False
+
+    def remove(self, idx) -> bool:
+        res = self.__r_json__.delete('bot:users', f'$.users.clients[?(@.id=="{idx}")]')
+        return res == 1
