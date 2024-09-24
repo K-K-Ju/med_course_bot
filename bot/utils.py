@@ -12,7 +12,7 @@ def run_query(query) -> Res:
 
 
 def prepare_db():
-    r = redis.Redis(connection_pool=redis_pool)
+    r = redis.StrictRedis(connection_pool=redis_pool, db=1)
     docs = {'bot:users': '{"users":{"clients":[], "admins":[]}}',
             'bot:lessons': '{"lessons":[]}',
             'bot:applies': '{"applies": []}'}

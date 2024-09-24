@@ -1,0 +1,6 @@
+{
+  "LOG_LVL": "DEBUG",
+  "LOG_FILE_PATH": "../medSchoolBot.log",
+  "REDIS_HOST": "localhost",
+  "REDIS_PORT": 6379
+}
