@@ -42,6 +42,19 @@ class ClientsDb(AbstractDb):
         clients = [ClientDAO.from_json(json.loads(c)) for c in clients_json_arr]
         return clients
 
+    def get_faq_section(self, idx):
+        res = self.__r__.get(f'faq:{idx}')
+        if res is None:
+            return res
+        else:
+            return res.decode('utf-8')
+
+    def set_faq_section(self, idx, section):
+        self.__r__.set(f'faq:{idx}', section)
+
+    def remove_faq_section(self, idx):
+        self.__r__.delete(f'faq:{idx}')
+
     def set_state(self, user_id, state: State):
         self.__r_json__.set('bot:users', f'$.users.clients[?(@.id=={user_id})].state', f'"{state.value}"')
     

@@ -9,6 +9,7 @@ from pyromod.types import ListenerTypes
 
 from bot.models import AppClient, ApplyDAO
 from bot.models import ClientDAO
+from bot.static import keyboards
 from bot.static.keyboards import (
     MenuOptions,
     ReplyKeyboards
@@ -21,7 +22,7 @@ from bot.db_driver import LessonDb, ApplyDb
 logger = logging.getLogger('main_logger')
 logger.info('Test logger')
 app = AppClient.client
-__db__ = ClientsDb()
+__clients_db__ = ClientsDb()
 __lessons_db__ = LessonDb()
 __apply_db__ = ApplyDb()
 
@@ -34,7 +35,7 @@ async def send_start(c: Client, msg: Message):
 
 async def send_menu(c, msg):
     keyboard = ReplyKeyboards.START_NOT_REGISTERED
-    if __db__.exists(msg.from_user.id):
+    if __clients_db__.exists(msg.from_user.id):
         keyboard = ReplyKeyboards.START
 
     await c.send_message(msg.chat.id,
@@ -43,13 +44,13 @@ async def send_menu(c, msg):
 
 
 async def show_status(c, msg: Message):
-    user = __db__.get(msg.from_user.id)
+    user = __clients_db__.get(msg.from_user.id)
     # TODO print user status
 
 
 async def register(c: Client, msg: Message):
     user_id = msg.from_user.id
-    if __db__.exists(user_id):
+    if __clients_db__.exists(user_id):
         await c.send_message(msg.chat.id, Messages.USE_MENU_REGISTRATION)
         return
 
@@ -59,7 +60,7 @@ async def register(c: Client, msg: Message):
     app_user = ClientDAO(msg.chat.id,
                          msg.from_user.username, first_name,
                          phone_number, State.BASE)
-    __db__.add(app_user)
+    __clients_db__.add(app_user)
     logger.debug(f'Registered new user id={user_id}')
     await c.send_message(msg.chat.id, 'Ви успішно зараєструвались! Тепер вам доступно більше функцій😉')
     await send_menu(c, msg)
@@ -106,6 +107,29 @@ async def apply(c: Client, query: CallbackQuery):
         await c.send_message(data['user_id'], 'Виникла помилка. Спробуйте пізніше або зв\'яжіться з менеджером')
 
 
+async def show_faq(c: Client, msg: Message):
+    chat_id = msg.chat.id
+    msg = await c.ask(chat_id, 'Choose section', reply_markup=ReplyKeyboards.FAQ)
+    while True:
+        sec = __clients_db__.get_faq_section(chat_id)
+
+        if msg.text == MenuOptions.BACK:
+            if sec is None:
+                await send_menu(c, msg)
+                break
+            __clients_db__.remove_faq_section(chat_id)
+            msg = await c.ask(chat_id, 'Choose option', reply_markup=ReplyKeyboards.FAQ)
+            continue
+
+        if sec is None:
+            reply_keyboard = keyboards.faq_mapping[msg.text]['keyboard']
+            __clients_db__.set_faq_section(chat_id, msg.text)
+            msg = await c.ask(chat_id, 'Choose option', reply_markup=reply_keyboard)
+        else:
+            faq_info = keyboards.faq_mapping[sec][msg.text]
+            msg = await c.ask(chat_id, faq_info)
+
+
 async def answer(c, msg: Message):
     chat_id = msg.chat.id
     if msg.text == MenuOptions.START_MENU.STATUS:
@@ -113,12 +137,12 @@ async def answer(c, msg: Message):
     elif msg.text == MenuOptions.START_MENU.APPLY:
         await __send_lessons_list__(c, msg.chat.id)
     elif msg.text == MenuOptions.START_MENU.FAQ:
-        await c.send_message(chat_id, 'FAQ option')
+        await show_faq(c, msg)
     elif msg.text == MenuOptions.START_MENU.REGISTER:
         await register(c, msg)
     elif msg.text == MenuOptions.START_MENU.CONTACT_MANAGER:
         user_id = msg.from_user.id
-        __db__.set_state(user_id, State.PENDING_MANAGER)
+        __clients_db__.set_state(user_id, State.PENDING_MANAGER)
         await c.send_message(chat_id, 'Зачекайте поки менеджер зв\'яжиться з вами через бота')
     elif msg.text == MenuOptions.START_MENU.MENU:
         await send_menu(c, msg)
