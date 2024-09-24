@@ -14,7 +14,7 @@ from bot.user import handlers
 from bot.admin import handlers as admin_handlers
 from bot.custom_filters import is_admin, first_is_emoji
 
-config.init_config('C:\\Users\\tusen\\Developing\\Python\\med_course_bot\\secrets.json')
+config.init_config('etc/secrets/secrets.json')
 
 prepare_logger(logging.DEBUG, config.config['LOG_FILE_PATH'])
 
