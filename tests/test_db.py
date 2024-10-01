@@ -1,6 +1,5 @@
 import pytest
 import redis
-import bot.logger
 
 from bot.models import LessonDAO, ApplyDAO
 from bot.admin.db_driver import AdminDb

@@ -1,5 +1,6 @@
 import logging
 
+import redis
 from pyrogram.handlers import CallbackQueryHandler
 from pyromod import MessageHandler
 from pyrogram import filters
@@ -17,6 +18,8 @@ from bot.custom_filters import is_admin, first_is_emoji
 config.init_config('C:\\Users\\tusen\\Developing\\Python\\med_course_bot\\secrets.json')
 
 prepare_logger(logging.DEBUG, config.config['LOG_FILE_PATH'])
+
+bot.utils.redis_pool = redis.ConnectionPool().from_url('rediss://red-crptmejv2p9s738c2e0g:90NlWrFu3XMiRVMK3xSKKnyz815awIvc@frankfurt-redis.render.com:6379')
 
 prepare_db()
 

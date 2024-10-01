@@ -2,9 +2,9 @@ import json
 import logging
 import redis
 
-from bot import redis_pool
+from bot.utils import redis_pool
 from bot.abstract import AbstractDb
-from bot.models import ClientDAO, Ok, Error
+from bot.models import ClientDAO, Error
 from bot.static.states import State
 from bot.utils import run_query
 

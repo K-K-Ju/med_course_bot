@@ -2,7 +2,7 @@ import logging
 
 import redis
 
-from bot import redis_pool
+from bot.utils import redis_pool
 from bot.abstract import AbstractDb
 from bot.models import LessonDAO, ApplyDAO
 from bot.static.states import State

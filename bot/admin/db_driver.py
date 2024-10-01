@@ -2,10 +2,8 @@ import logging
 
 import redis
 
-from bot import redis_pool
-from bot.models import Ok
+from bot.utils import redis_pool
 from bot.static.states import State
-from bot.utils import run_query
 
 logger = logging.getLogger('main_logger')
 

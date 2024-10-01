@@ -1,6 +1,7 @@
-from bot import redis_pool
 from bot.models import Res, Ok, Error
 import redis
+
+redis_pool = None
 
 
 def run_query(query) -> Res:
