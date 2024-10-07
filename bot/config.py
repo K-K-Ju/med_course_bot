@@ -14,7 +14,8 @@ def init_config(path):
     cfg = __load_config__(path)
     config['LOG_LVL'] = logging.getLevelNamesMapping()[cfg['LOG_LVL']]
     config['LOG_FILE_PATH'] = cfg['LOG_FILE_PATH']
-    config['REDIS_URL'] = cfg['REDIS_URL']
+    config['REDIS_PORT'] = cfg['REDIS_PORT']
+    config['REDIS_HOST'] = cfg['REDIS_HOST']
     try:
         config['ADMIN_KEY'] = cfg['ADMIN_KEY']
     except KeyError:

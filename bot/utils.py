@@ -1,7 +1,7 @@
 from bot.models import Res, Ok, Error
 import redis
 
-redis_pool = None
+redis_pool = redis.ConnectionPool(db=1)
 
 
 def run_query(query) -> Res:
@@ -28,3 +28,4 @@ def prepare_db():
     assert res == test_value
     r.delete(test_key)
     print('Finished testing database')
+    r.close()

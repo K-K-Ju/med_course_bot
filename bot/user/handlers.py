@@ -141,8 +141,6 @@ async def answer(c, msg: Message):
     elif msg.text == MenuOptions.START_MENU.REGISTER:
         await register(c, msg)
     elif msg.text == MenuOptions.START_MENU.CONTACT_MANAGER:
-        user_id = msg.from_user.id
-        __clients_db__.set_state(user_id, State.PENDING_MANAGER)
-        await c.send_message(chat_id, 'Зачекайте поки менеджер зв\'яжиться з вами через бота')
+        await c.send_message(chat_id, 'Перейдіть до бота підтримки <a href="https://t.me/med_school_support_bot">посилання</a>')
     elif msg.text == MenuOptions.START_MENU.MENU:
         await send_menu(c, msg)

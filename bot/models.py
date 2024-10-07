@@ -90,8 +90,8 @@ class ApplyDAO(DAO):
 class AppClient:
     client: Client = None
 
-    def __init__(self, name, lang):
-        AppClient.client = Client(name=name, lang_code=lang)
+    def __init__(self, name, lang, bot_token=None, api_id=None, api_hash=None):
+        AppClient.client = Client(name=name, lang_code=lang, bot_token=bot_token, api_id=api_id, api_hash=api_hash)
 
 
 class Res:
