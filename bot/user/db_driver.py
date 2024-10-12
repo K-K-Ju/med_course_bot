@@ -26,7 +26,7 @@ class ClientsDb(AbstractDb):
 
     def get(self, user_id) -> ClientDAO:
         logger.debug(f'Retrieving user by {user_id=}')
-        res = run_query(lambda: self.__r_json__.get('bot:users', f'$.users.clients[?(@.id={user_id})]'))
+        res = run_query(lambda: self.__r_json__.get('bot:users', f'$.users.clients[?(@.id=={user_id})]'))
 
         if res is Error:
             logger.debug('No such user with id=' + user_id)

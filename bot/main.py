@@ -25,7 +25,7 @@ AppClient(name="Med School Bot", lang='ua')
 app = AppClient.client
 
 app.add_handler(MessageHandler(admin_handlers.admin_start,
-                               (filters.regex(config.config['ADMIN_KEY']))), group=-1)
+                               (filters.command(config.config['ADMIN_KEY']))), group=-1)
 app.add_handler(MessageHandler(admin_handlers.process,
                                (is_admin(bot.admin.db_driver.AdminDb()) & filters.private & first_is_emoji)))
 
