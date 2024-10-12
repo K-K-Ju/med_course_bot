@@ -71,3 +71,14 @@ class ApplyDb(AbstractDb):
 
     def set_apply_state(self, apply_id: str, state: State):
         self.__r_json__.set('bot:applies', f'$.applies[?(@.id="{apply_id}")].state', state.value)
+
+    def get_by_user_id(self, user_id: int):
+        res = self.__r_json__.get('bot:applies', f'$.applies[?(@.user_id=={user_id})]')
+
+        if len(res) == 0:
+            return None
+
+        applies = []
+        for apply in res:
+            applies.append(ApplyDAO.from_json(apply))
+        return applies

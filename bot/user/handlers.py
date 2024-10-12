@@ -43,9 +43,18 @@ async def send_menu(c, msg):
                          reply_markup=keyboard)
 
 
-async def show_status(c, msg: Message):
-    user = __clients_db__.get(msg.from_user.id)
-    # TODO print user status
+async def show_status(c: Client, msg: Message):
+    client = __clients_db__.get(msg.from_user.id)
+    applies = __apply_db__.get_by_user_id(msg.from_user.id)
+    lessons = []
+    for a in applies:
+        les = __lessons_db__.get(a.lesson_id)
+        lessons.append(les)
+    text = f'Name: {client.name}\nApplies:\n\n'
+    for i in range(0, len(applies)):
+        text += f'{i}. {lessons[i].title} ({lessons[i].datetime})\nstate: {applies[i].state}\n\n'
+
+    await c.send_message(msg.from_user.id, text)
 
 
 async def register(c: Client, msg: Message):
@@ -133,7 +142,7 @@ async def show_faq(c: Client, msg: Message):
 async def answer(c, msg: Message):
     chat_id = msg.chat.id
     if msg.text == MenuOptions.START_MENU.STATUS:
-        await c.send_message(chat_id, 'status reply')
+        await show_status(c, msg)
     elif msg.text == MenuOptions.START_MENU.APPLY:
         await __send_lessons_list__(c, msg.chat.id)
     elif msg.text == MenuOptions.START_MENU.FAQ:
