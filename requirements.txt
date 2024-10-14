@@ -4,3 +4,4 @@ gspread~=6.1.2
 redis~=5.0.8
 emoji~=2.12.1
 pytest~=8.3.2
+TgCrypto~=1.2.5

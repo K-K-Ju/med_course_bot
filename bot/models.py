@@ -1,9 +1,30 @@
-from bot.abstract import DAO
+from bot.abstract import DTO
 from bot.static.states import State, ApplyState
 from pyromod import Client
 
 
-class ClientDAO(DAO):
+class AdminDTO:
+    def __init__(self, _id_, _state_):
+        self.id = _id_
+        self.state = _state_
+
+    @staticmethod
+    def default():
+        return AdminDTO(0, 'default')
+
+    @staticmethod
+    def from_json(d: dict):
+        return AdminDTO(d['id'], d['state'])
+
+    @staticmethod
+    def to_json_dict(dto):
+        return {
+            'id': dto.id,
+            'username': dto.state.value
+        }
+
+
+class ClientDTO(DTO):
     def __init__(self, _id_, _username_, _name_, _phone_number_, _state_: State):
         self.id = _id_
         self.user_name = _username_
@@ -13,25 +34,25 @@ class ClientDAO(DAO):
 
     @staticmethod
     def default():
-        return ClientDAO(0, 'default', '', '', State.NOT_REGISTERED)
+        return ClientDTO(0, 'default', '', '', State.NOT_REGISTERED)
 
     @staticmethod
     def from_json(d: dict):
-        return ClientDAO(d['id'], d['username'], d['name'], d['phone_number'],
+        return ClientDTO(d['id'], d['username'], d['name'], d['phone_number'],
                          State(int(d['state'])))
 
     @staticmethod
-    def to_json_dict(dao):
+    def to_json_dict(dto):
         return {
-            'id': dao.id,
-            'username': dao.user_name,
-            'name': dao.name,
-            'phone_number': dao.phone_number,
-            'state': dao.state.value
+            'id': dto.id,
+            'username': dto.user_name,
+            'name': dto.name,
+            'phone_number': dto.phone_number,
+            'state': dto.state.value
         }
 
 
-class LessonDAO(DAO):
+class LessonDTO(DTO):
     def __init__(self, _title_, _datetime_, _price_, _description_, _id_=0):
         self.title = _title_
         self.datetime = _datetime_
@@ -41,28 +62,28 @@ class LessonDAO(DAO):
 
     @staticmethod
     def default():
-        return LessonDAO('default', 'default', 0, '')
+        return LessonDTO('default', 'default', 0, '')
 
     @staticmethod
     def from_json(d):
-        ls = LessonDAO(d['title'],
+        ls = LessonDTO(d['title'],
                        d['datetime'],
                        int(d['price']), d['description'], _id_=d['id'])
 
         return ls
 
     @staticmethod
-    def to_json_dict(dao):
+    def to_json_dict(dto):
         return {
-            'title': dao.title,
-            'datetime': dao.datetime,
-            'price': dao.price,
-            'description': dao.description,
-            'id': dao.id
+            'title': dto.title,
+            'datetime': dto.datetime,
+            'price': dto.price,
+            'description': dto.description,
+            'id': dto.id
         }
 
 
-class ApplyDAO(DAO):
+class ApplyDTO(DTO):
     def __init__(self, _user_id_, _lesson_id_, _state_: ApplyState, _id_=0):
         self.user_id = _user_id_
         self.lesson_id = _lesson_id_
@@ -71,19 +92,19 @@ class ApplyDAO(DAO):
 
     @staticmethod
     def default():
-        return ApplyDAO(0, 0, ApplyState.NEW)
+        return ApplyDTO(0, 0, ApplyState.NEW)
 
     @staticmethod
     def from_json(d: dict):
-        return ApplyDAO(int(d['user_id']), d['lesson_id'], ApplyState(d['state']), _id_=d['id'])
+        return ApplyDTO(int(d['user_id']), d['lesson_id'], ApplyState(d['state']), _id_=d['id'])
 
     @staticmethod
-    def to_json_dict(dao):
+    def to_json_dict(dto):
         return {
-            'user_id': dao.user_id,
-            'lesson_id': dao.lesson_id,
-            'state': dao.state.value,
-            'id': dao.id
+            'user_id': dto.user_id,
+            'lesson_id': dto.lesson_id,
+            'state': dto.state.value,
+            'id': dto.id
         }
 
 

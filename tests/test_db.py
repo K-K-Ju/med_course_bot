@@ -1,7 +1,7 @@
 import pytest
 import redis
 
-from bot.models import LessonDAO, ApplyDAO
+from bot.models import LessonDTO, ApplyDTO
 from bot.admin.db_driver import AdminDb
 from bot.db_driver import LessonDb, ApplyDb
 from bot.static.states import ApplyState
@@ -15,13 +15,13 @@ apply_db = ApplyDb(_connection_pool_=con_pool)
 
 @pytest.fixture()
 def data_lesson_dao():
-    return LessonDAO('Test lesson',
+    return LessonDTO('Test lesson',
                      '20.09.2024 11:30', '1000', 'Some test description')
 
 
 @pytest.fixture()
 def data_apply_dao():
-    return ApplyDAO('123456789', 'lesson:0', ApplyState.NEW)
+    return ApplyDTO('123456789', 'lesson:0', ApplyState.NEW)
 
 
 def test_add_lesson(data_lesson_dao):

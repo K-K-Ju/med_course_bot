@@ -7,8 +7,8 @@ from pyrogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, InlineK
 from pyromod import Client
 from pyromod.types import ListenerTypes
 
-from bot.models import AppClient, ApplyDAO
-from bot.models import ClientDAO
+from bot.models import AppClient, ApplyDTO
+from bot.models import ClientDTO
 from bot.static import keyboards
 from bot.static.keyboards import (
     MenuOptions,
@@ -22,9 +22,18 @@ from bot.db_driver import LessonDb, ApplyDb
 logger = logging.getLogger('main_logger')
 logger.info('Test logger')
 app = AppClient.client
-__clients_db__ = ClientsDb()
-__lessons_db__ = LessonDb()
-__apply_db__ = ApplyDb()
+
+__clients_db__ = None
+__lessons_db__ = None
+__apply_db__ = None
+
+
+def inject_dbs(redis_pool):
+    global __clients_db__, __lessons_db__, __apply_db__
+
+    __clients_db__ = ClientsDb(redis_pool)
+    __lessons_db__ = LessonDb(redis_pool)
+    __apply_db__ = ApplyDb(redis_pool)
 
 
 async def send_start(c: Client, msg: Message):
@@ -66,7 +75,7 @@ async def register(c: Client, msg: Message):
     first_name = (await c.ask(msg.chat.id, 'Введіть ваше ім\'я', filters=filters.text)).text
     phone_number = await __get_phone_number__(c, msg)
 
-    app_user = ClientDAO(msg.chat.id,
+    app_user = ClientDTO(msg.chat.id,
                          msg.from_user.username, first_name,
                          phone_number, State.BASE)
     __clients_db__.add(app_user)
@@ -107,7 +116,7 @@ async def __send_lessons_list__(c: Client, chat_id):
 
 async def apply(c: Client, query: CallbackQuery):
     data = json.loads(query.data)
-    a = ApplyDAO(data['user_id'], data['lesson_id'], ApplyState.NEW)
+    a = ApplyDTO(data['user_id'], data['lesson_id'], ApplyState.NEW)
     success = __apply_db__.add(a)
     if success:
         await c.send_message(data['user_id'], 'Ви записались на урок')

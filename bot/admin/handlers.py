@@ -9,20 +9,33 @@ import bot
 from bot.db_driver import LessonDb
 from bot.user.db_driver import ClientsDb
 from bot.admin.db_driver import AdminDb
-from bot.models import AppClient, LessonDAO
+from bot.models import AppClient, LessonDTO, AdminDTO
 from bot.static.keyboards import AdminReplyKeyboards, MenuOptions
 from bot.static.states import State
 
 app = AppClient.client
-__admin_db__ = AdminDb()
-__db__ = ClientsDb()
-__lesson_db__ = LessonDb()
 log = logging.getLogger()
+
+__admin_db__: AdminDb = None
+__lessons_db__: LessonDb = None
+__db__: ClientsDb = None
+
+
+def inject_dbs(redis_pool):
+    global __db__, __lessons_db__, __admin_db__
+
+    __db__ = ClientsDb(redis_pool)
+    __lessons_db__ = LessonDb(redis_pool)
+    __admin_db__ = AdminDb(redis_pool)
 
 
 async def admin_start(c: Client, msg: Message):
     chat_id = msg.chat.id
-    __admin_db__.set_admin_state(chat_id, State.ACTIVE_ADMIN)
+    if __admin_db__.is_admin(chat_id):
+        __admin_db__.set_admin_state(chat_id, State.ACTIVE_ADMIN)
+    else:
+        __admin_db__.add(AdminDTO(chat_id, State.ACTIVE_ADMIN))
+
     await c.send_message(chat_id, 'Вітаю, адмін!')
     await send_admin_menu(c, msg)
 
@@ -53,7 +66,7 @@ async def process(c: Client, msg: Message):
 
 
 async def view_lessons(c: Client, msg: Message):
-    lessons = __lesson_db__.get_lessons()
+    lessons = __lessons_db__.get_lessons()
     s = ''
     for l in lessons:
         s += f'{l.title} - {l.datetime} - {l.price}\n'
@@ -81,7 +94,7 @@ async def add_lesson(c: Client, msg: Message):
     price = (await c.ask(chat_id, 'Введіть ціну уроку', filters=filters.private)).text
     description = (await c.ask(chat_id, 'Введіть опис уроку', filters=filters.private)).text
 
-    __lesson_db__.add(LessonDAO(title, str_datetime, price, description))
+    __lessons_db__.add(LessonDTO(title, str_datetime, price, description))
 
     await c.send_message(chat_id, f'Урок доданий - {title}')
     await send_admin_menu(c, msg)

@@ -1,7 +1,11 @@
+import json
+
 from bot.models import Res, Ok, Error
 import redis
 
-redis_pool = redis.ConnectionPool(db=1)
+
+def init_redis_pool(redis_host, redis_port):
+    return redis.ConnectionPool(db=1, host=redis_host, port=redis_port)
 
 
 def run_query(query) -> Res:
@@ -12,14 +16,15 @@ def run_query(query) -> Res:
         return Error('No records were found')
 
 
-def prepare_db():
-    r = redis.StrictRedis(connection_pool=redis_pool, db=1)
-    docs = {'bot:users': '{"users":{"clients":[], "admins":[]}}',
-            'bot:lessons': '{"lessons":[]}',
-            'bot:applies': '{"applies": []}'}
+def prepare_db(redis_pool):
+    r = redis.StrictRedis(connection_pool=redis_pool)
+    docs = {'bot:users:clients': [{'id': 0}],
+            'bot:users:admins': [],
+            'bot:lessons': [],
+            'bot:applies': []}
 
     for doc_name, doc_struct in docs.items():
-        r.json().set(doc_name, '$', doc_struct, nx=True)
+        r.json().set(doc_name, '$', json.dumps(doc_struct), nx=True)
 
     print('Testing database...')
     test_key, test_value = 'test_key', 100

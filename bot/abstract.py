@@ -1,4 +1,4 @@
-class DAO:
+class DTO:
     @staticmethod
     def default():
         TypeError(reason='use this method with concrete successor')
@@ -8,15 +8,15 @@ class DAO:
         TypeError(reason='use this method with concrete successor')
 
     @staticmethod
-    def to_json_dict(dao):
+    def to_json_dict(dto):
         TypeError(reason='use this method with concrete successor')
 
 
 class AbstractDb:
-    def add(self, dao: DAO) -> bool:
+    def add(self, dto: DTO) -> bool:
         TypeError(reason='use this method with concrete successor')
 
-    def get(self, id) -> DAO:
+    def get(self, id) -> DTO:
         TypeError(reason='use this method with concrete successor')
 
     def remove(self, id) -> bool:
