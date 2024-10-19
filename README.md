@@ -9,26 +9,40 @@ Install all dependencies:
 ```sh
 python3 -m pip install -r requirements.txt
 ```
+
+
 Provide all keys for Pyrogram client (api_hash, api_id, bot_api)
+
 ```python
 AppClient(name="Med School Bot", lang='ua', api_id=12345678, api_hash='your_app_hash', bot_api='1234567:your_bot_api')
 ```
+
 > Note: after first launch Pyrogrma generaes session file which is loaded each app start, so you don`t need to remain sensible data in code.
 
-App is using .json config file.
 
-## Usage example
+Setup config.json:
 
+```json
+{
+  "LOG_LVL": "DEBUG",
+  "LOG_FILE_PATH": "../medSchoolBot.log",
+  "REDIS_HOST": "localhost",
+  "REDIS_PORT": 6379,
+  "ADMIN_KEY": "youradminkey"
+}
+```
+> Note: `ADMIN_KEY` is used for generating command for Telegram bot, for correct result use keys only `[A-z]+` format.
 
-_For more examples and usage, please refer to the [Wiki][wiki]._
 
 ## Running
 
-Describe how to install all development dependencies and how to run an automated test-suite of some kind. Potentially do this for multiple platforms.
+To start bot run main.py with argument which represents path to config file:
+
 
 ```sh
 python3 bot/main.py path/to/config.json
 ```
+
 
 ## Meta
 
