@@ -17,7 +17,7 @@ Provide all keys for Pyrogram client (api_hash, api_id, bot_api)
 AppClient(name="Med School Bot", lang='ua', api_id=12345678, api_hash='your_app_hash', bot_api='1234567:your_bot_api')
 ```
 
-> Note: after first launch Pyrogrma generaes session file which is loaded each app start, so you don`t need to remain sensible data in code.
+> Note: after first launch Pyrogram generaes session file which is loaded each app start, so you don`t need to remain sensible data in code.
 
 
 Setup config.json:
