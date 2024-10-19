@@ -34,7 +34,7 @@ python3 bot/main.py path/to/config.json
 
 Your Name – [@LinkedIn](https://www.linkedin.com/in/andrii-prodan-1513ba234/) – coderinhat@aol.com
 
-Distributed under the GNU license. See ``LICENSE`` for more information.
+Distributed under the GPL-3.0 license. See ``LICENSE`` for more information.
 
 [LICENSE](https://github.com/K-K-Ju/med_course_bot/blob/master/LICENSE.txt)
 
