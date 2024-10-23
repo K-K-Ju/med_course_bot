@@ -1,7 +1,19 @@
 import json
 import logging
 
-config = {}
+
+class AppConfig:
+    admin_key: str
+    api_hash: str
+    api_id: int
+    bot_token: str
+    log_lvl: str
+    log_file_path: str
+    redis_host: str
+    redis_port: int
+
+
+app_config = AppConfig()
 
 
 def __load_config__(path):
@@ -12,11 +24,15 @@ def __load_config__(path):
 
 def init_config(path):
     cfg = __load_config__(path)
-    config['LOG_LVL'] = logging.getLevelNamesMapping()[cfg['LOG_LVL']]
-    config['LOG_FILE_PATH'] = cfg['LOG_FILE_PATH']
-    config['REDIS_PORT'] = cfg['REDIS_PORT']
-    config['REDIS_HOST'] = cfg['REDIS_HOST']
+    app_config.api_hash = cfg['API_HASH']
+    app_config.api_id = cfg['API_ID']
+    app_config.bot_token = cfg['BOT_TOKEN']
+    app_config.log_lvl = logging.getLevelNamesMapping()[cfg['LOG_LVL']]
+    app_config.log_file_path = cfg['LOG_FILE_PATH']
+    app_config.redis_port = cfg['REDIS_PORT']
+    app_config.redis_host = cfg['REDIS_HOST']
+
     try:
-        config['ADMIN_KEY'] = cfg['ADMIN_KEY']
+        app_config.admin_key = cfg['ADMIN_KEY']
     except KeyError:
-        config['ADMIN_KEY'] = ''
+        app_config.admin_key = ''

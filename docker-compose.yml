@@ -1,0 +1,19 @@
+services:
+  bot:
+    build:
+      dockerfile: ./Dockerfile
+    container_name: med_course
+    ports:
+      - 443:443
+      - 80:80
+    command: python3 bot/main.py ./secrets.json
+    volumes:
+      - .:/usr/src/app
+    depends_on:
+      - redis-stack
+    links:
+      - redis-stack
+  redis-stack:
+    image: redis/redis-stack:latest
+    ports:
+      - 10000:6379

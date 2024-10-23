@@ -15,20 +15,25 @@ from bot.utils import prepare_db, init_redis_pool
 from bot.models import AppClient
 
 import config
+from config import app_config
 
 config.init_config(sys.argv[1])
 
-prepare_logger(logging.DEBUG, config.config['LOG_FILE_PATH'])
-redis_pool = init_redis_pool(config.config['REDIS_HOST'], config.config['REDIS_PORT'])
+prepare_logger(logging.DEBUG, app_config.log_file_path)
+redis_pool = init_redis_pool(app_config.redis_host, app_config.redis_port)
 prepare_db(redis_pool)
 bot.user.handlers.inject_dbs(redis_pool)
 admin_handlers.inject_dbs(redis_pool)
 
-AppClient(name="Med School Bot", lang='ua')
+AppClient(name="Med School Bot", lang='ua',
+          api_hash=app_config.api_hash,
+          api_id=app_config.api_id,
+          bot_token=app_config.bot_token)
+
 app = AppClient.client
 
 app.add_handler(MessageHandler(admin_handlers.admin_start,
-                               (filters.command(config.config['ADMIN_KEY']))), group=-1)
+                               (filters.command(app_config.admin_key))), group=-1)
 app.add_handler(MessageHandler(admin_handlers.process,
                                (is_admin(AdminDb(redis_pool)) & filters.private & first_is_emoji)))
 
