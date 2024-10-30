@@ -34,7 +34,7 @@ class MenuOptions:
         TERMS = 'Умови та строки оплати'
 
     class ADMIN_OPTIONS:
-        FIND_USER = '🔍Отримати дані про користувача через id, моб. теле. або @username'
+        FIND_USER = '🔍Отримати дані про користувача через id, моб. тел. або @username'
         ADD_LESSON = '➡️Додати занятя'
         GET_LESSONS = '⬇️Список занять'
         EXIT = '🔧Вийти з панелі'

@@ -1,12 +1,14 @@
 import logging
+import re
 import time
 
 from pyrogram import filters
+from pyrogram.enums import ParseMode
 from pyrogram.types import Message
 from pyromod import Client
 
 import bot
-from bot.db_driver import LessonDb
+from bot.db_driver import LessonDb, ApplyDb
 from bot.user.db_driver import ClientsDb
 from bot.admin.db_driver import AdminDb
 from bot.models import AppClient, LessonDTO, AdminDTO
@@ -19,14 +21,16 @@ log = logging.getLogger()
 __admin_db__: AdminDb = None
 __lessons_db__: LessonDb = None
 __db__: ClientsDb = None
+__applies_db__: ApplyDb = None
 
 
 def inject_dbs(redis_pool):
-    global __db__, __lessons_db__, __admin_db__
+    global __db__, __lessons_db__, __admin_db__, __applies_db__
 
     __db__ = ClientsDb(redis_pool)
     __lessons_db__ = LessonDb(redis_pool)
     __admin_db__ = AdminDb(redis_pool)
+    __applies_db__ = ApplyDb(redis_pool)
 
 
 async def admin_start(c: Client, msg: Message):
@@ -43,19 +47,17 @@ async def admin_start(c: Client, msg: Message):
 async def send_admin_menu(c: Client, msg: Message):
     chat_id = msg.chat.id
     await c.send_message(msg.chat.id, 'Оберіть пункт меню', reply_markup=AdminReplyKeyboards.START)
-    # opt = await c.listen(chat_id=chat_id)
-    # await process(c, opt)
 
 
 async def process(c: Client, msg: Message):
     text = msg.text
-    if text == MenuOptions.ADMIN_OPTIONS.CONTACT_USER:
-        pending_users = __db__.get_by_state(State.PENDING_MANAGER)
-        # TODO choosing option and passing to function
-    elif text == MenuOptions.ADMIN_OPTIONS.ADD_LESSON:
+    if text == MenuOptions.ADMIN_OPTIONS.ADD_LESSON:
         await add_lesson(c, msg)
     elif text == MenuOptions.ADMIN_OPTIONS.GET_LESSONS:
         await view_lessons(c, msg)
+    elif text == MenuOptions.ADMIN_OPTIONS.FIND_USER:
+        credentials = (await c.ask(msg.chat.id, 'Введіть номер телефону, username або Telegram id')).text
+        await retrieve_user_data(c, msg, credentials)
     elif text == MenuOptions.ADMIN_OPTIONS.EXIT:
         __admin_db__.set_admin_state(msg.from_user.id, State.BASE)
         await c.send_message(msg.chat.id, 'Ви вийшли з панелі адміна')
@@ -98,3 +100,25 @@ async def add_lesson(c: Client, msg: Message):
 
     await c.send_message(chat_id, f'Урок доданий - {title}')
     await send_admin_menu(c, msg)
+
+async def retrieve_user_data(c: Client, msg: Message, credentials: str):
+    phone_pattern = r'^\+?\d+$'
+    username_pattern = r"^@\S+$"
+
+    attr = 'id'
+    if re.match(phone_pattern, credentials):
+        attr = 'phone_number'
+    elif re.match(username_pattern, credentials):
+        attr = 'username'
+        credentials = credentials[1:]
+
+    user = __db__.get_by_attr(attr, credentials)
+    user_assignments = __applies_db__.get_by_user_id(user.id)
+    assigned_lessons = []
+    for ua in user_assignments:
+        assigned_lessons.append(__lessons_db__.get(ua.lesson_id))
+
+    await c.send_message(msg.chat.id,
+                         f'**User**:\n\tId: {user.id}\n\t**username**: {user.user_name}\n\t**phone_number**: {user.phone_number}\n\n'+
+                         f'Assignments:\n' + '\n'.join([al.title for al in assigned_lessons]),
+                         parse_mode=ParseMode.MARKDOWN)

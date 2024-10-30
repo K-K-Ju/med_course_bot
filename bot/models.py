@@ -20,7 +20,7 @@ class AdminDTO:
     def to_json_dict(dto):
         return {
             'id': dto.id,
-            'username': dto.state.value
+            'state': dto.state.value,
         }
 
 
