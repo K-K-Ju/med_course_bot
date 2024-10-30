@@ -16,10 +16,10 @@ class AbstractDb:
     def add(self, dto: DTO) -> bool:
         TypeError(reason='use this method with concrete successor')
 
-    def get(self, id) -> DTO:
+    def get(self, idx) -> DTO:
         TypeError(reason='use this method with concrete successor')
 
-    def remove(self, id) -> bool:
+    def remove(self, idx) -> bool:
         TypeError(reason='use this method with concrete successor')
 
     def list(self):

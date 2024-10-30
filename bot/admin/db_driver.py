@@ -2,13 +2,14 @@ import logging
 
 import redis
 
+from bot.abstract import AbstractDb
 from bot.models import AdminDTO
 from bot.static.states import State
 
 logger = logging.getLogger('main_logger')
 
 
-class AdminDb:
+class AdminDb(AbstractDb):
     def __init__(self, _connection_pool_):
         logger.info('Preparing admin db driver...')
         self.__r__ = redis.StrictRedis(connection_pool=_connection_pool_)
