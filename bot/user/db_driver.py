@@ -1,6 +1,7 @@
 import json
 import logging
 import redis
+from typing_extensions import override
 
 from bot.abstract import AbstractDb
 from bot.models import ClientDTO, Error
@@ -23,17 +24,30 @@ class ClientsDb(AbstractDb):
         self.__r_json__.arrappend('bot:users:clients', '$', ClientDTO.to_json_dict(app_user))
         logger.debug(f'End adding user {app_user.id=}')
 
-    def get(self, user_id) -> ClientDTO:
-        logger.debug(f'Retrieving user by {user_id=}')
-        res = run_query(lambda: self.__r_json__.get('bot:users:clients', f'$[?(@.id=={user_id})]'))
-
+    @override
+    def get(self, tg_id: int) -> ClientDTO:
+        logger.debug(f'Getting {tg_id=}')
+        res = run_query(lambda: self.__r_json__.get('bot:users:clients', f'$[?(@.id=={tg_id})]'))
         if res is Error:
-            logger.debug('No such user with id=' + user_id)
+            logger.debug(f'No such user with {tg_id=}')
             return ClientDTO.default()
         else:
             user_json = res.val[0]
-            logger.debug(f'End of retrieving user by {user_id=}')
+            logger.debug(f'End of retrieving user by {tg_id=}')
             return ClientDTO.from_json(user_json)
+
+    def get_by_attr(self, attr, value) -> ClientDTO:
+        logger.debug(f'Retrieving user by {attr}={value}')
+        res = run_query(lambda: self.__r_json__.get('bot:users:clients', f"$[?(@.{attr}=='{value}')]"))
+
+        if res is Error:
+            logger.debug(f'No such user with {attr}={value}')
+            return ClientDTO.default()
+        else:
+            user_json = res.val[0]
+            logger.debug(f'End of retrieving user by {attr}={value}')
+            return ClientDTO.from_json(user_json)
+
 
     def get_by_state(self, state: State):
         res = self.__r_json__.get('bot:users:clients', f'$[?(@.state={state.value})]')

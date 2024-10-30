@@ -14,8 +14,7 @@ class LessonDb(AbstractDb):
         self.__r__ = redis.Redis(connection_pool=_connection_pool_)
         self.__r_json__ = self.__r__.json()
         self.LESSON_ID_GEN = 'lesson_id_gen'
-        if not self.__r__.get(self.LESSON_ID_GEN):
-            self.__r__.set(self.LESSON_ID_GEN, 0)
+        self.__r__.set(self.LESSON_ID_GEN, 0, nx=True)
 
     def add(self, lesson: LessonDTO):
 
@@ -30,13 +29,11 @@ class LessonDb(AbstractDb):
 
     def get_lessons(self):
         lessons_json_arr = self.__r_json__.get('bot:lessons', '$')[0]
-
         lessons = [LessonDTO.from_json(l) for l in lessons_json_arr]
-
         return lessons
 
-    def get(self, lesson_id):
-        res = self.__r_json__.get('bot:lessons', f'$.[?(@.id=="{lesson_id}")]')
+    def get(self, idx):
+        res = self.__r_json__.get('bot:lessons', f'$[?(@.id=="{idx}")]')
         if len(res) == 0:
             return None
 
@@ -59,8 +56,8 @@ class ApplyDb(AbstractDb):
         self.__r__.incrby(self.APPLY_ID_GEN, 1)
         return res
 
-    def get(self, apply_id):
-        res = self.__r_json__.get('bot:applies', f'$.[?(@.id=="{apply_id}")]')
+    def get(self, idx):
+        res = self.__r_json__.get('bot:applies', f'$.[?(@.id=="{idx}")]')
         if len(res) == 0:
             return None
 
@@ -75,7 +72,7 @@ class ApplyDb(AbstractDb):
         res = self.__r_json__.get('bot:applies', f'$.[?(@.user_id=={user_id})]')
 
         if len(res) == 0:
-            return None
+            return []
 
         applies = []
         for apply in res:
