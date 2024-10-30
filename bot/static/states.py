@@ -13,3 +13,6 @@ class ApplyState(Enum):
     BOOKED = 1
     CONFIRMED = 2
     DECLINED = 3
+
+
+APPLY_STATE_TEXT_MAPPING: dict = {0: 'Новий', 1: 'Заброньвано', 2: 'Підтверджено', 3: 'Відхилено'}

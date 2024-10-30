@@ -15,7 +15,7 @@ from bot.static.keyboards import (
     ReplyKeyboards
 )
 from bot.static.messages import Messages
-from bot.static.states import State, ApplyState
+from bot.static.states import State, ApplyState, APPLY_STATE_TEXT_MAPPING
 from bot.user.db_driver import ClientsDb
 from bot.db_driver import LessonDb, ApplyDb
 
@@ -23,9 +23,9 @@ logger = logging.getLogger('main_logger')
 logger.info('Test logger')
 app = AppClient.client
 
-__clients_db__ = None
-__lessons_db__ = None
-__apply_db__ = None
+__clients_db__: ClientsDb = None
+__lessons_db__: LessonDb = None
+__apply_db__: ApplyDb = None
 
 
 def inject_dbs(redis_pool):
@@ -59,9 +59,9 @@ async def show_status(c: Client, msg: Message):
     for a in applies:
         les = __lessons_db__.get(a.lesson_id)
         lessons.append(les)
-    text = f'Name: {client.name}\nApplies:\n\n'
+    text = f'**Ім\'я**: {client.name}\n**Записи**:\n\n'
     for i in range(0, len(applies)):
-        text += f'{i}. {lessons[i].title} ({lessons[i].datetime})\nstate: {applies[i].state}\n\n'
+        text += f'{i}. {lessons[i].title} ({lessons[i].datetime})\nстан: {APPLY_STATE_TEXT_MAPPING[applies[i].state.value]}\n'
 
     await c.send_message(msg.from_user.id, text)
 
