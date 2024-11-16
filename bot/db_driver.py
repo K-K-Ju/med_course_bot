@@ -27,12 +27,12 @@ class LessonDb(AbstractDb):
         self.__r__.incrby(self.LESSON_ID_GEN, 1)
         return res
 
-    def get_lessons(self):
+    def list(self):
         lessons_json_arr = self.__r_json__.get('bot:lessons', '$')[0]
         lessons = [LessonDTO.from_json(l) for l in lessons_json_arr]
         return lessons
 
-    def get(self, idx):
+    def get(self, idx: str):
         res = self.__r_json__.get('bot:lessons', f'$[?(@.id=="{idx}")]')
         if len(res) == 0:
             return None
@@ -40,6 +40,9 @@ class LessonDb(AbstractDb):
         lesson_dict = res[0]
         lesson = LessonDTO.from_json(lesson_dict)
         return lesson
+
+    def remove(self, idx) -> bool:
+        pass
 
 
 class ApplyDb(AbstractDb):
@@ -56,7 +59,7 @@ class ApplyDb(AbstractDb):
         self.__r__.incrby(self.APPLY_ID_GEN, 1)
         return res
 
-    def get(self, idx):
+    def get(self, idx: str):
         res = self.__r_json__.get('bot:applies', f'$.[?(@.id=="{idx}")]')
         if len(res) == 0:
             return None
@@ -68,7 +71,7 @@ class ApplyDb(AbstractDb):
     def set_apply_state(self, apply_id: str, state: State):
         self.__r_json__.set('bot:applies', f'$.[?(@.id="{apply_id}")].state', state.value)
 
-    def get_by_user_id(self, user_id: int):
+    def get_by_user_id(self, user_id: str):
         res = self.__r_json__.get('bot:applies', f'$.[?(@.user_id=={user_id})]')
 
         if len(res) == 0:
@@ -78,3 +81,9 @@ class ApplyDb(AbstractDb):
         for apply in res:
             applies.append(ApplyDTO.from_json(apply))
         return applies
+
+    def remove(self, idx) -> bool:
+        raise NotImplemented()
+
+    def list(self):
+        raise NotImplemented()

@@ -1,6 +1,7 @@
 import logging
 import re
 import time
+from typing import List
 
 from pyrogram import filters
 from pyrogram.enums import ParseMode
@@ -11,7 +12,7 @@ import bot
 from bot.db_driver import LessonDb, ApplyDb
 from bot.user.db_driver import ClientsDb
 from bot.admin.db_driver import AdminDb
-from bot.models import AppClient, LessonDTO, AdminDTO
+from bot.models import AppClient, LessonDTO, AdminDTO, ApplyDTO
 from bot.static.keyboards import AdminReplyKeyboards, MenuOptions
 from bot.static.states import State
 
@@ -38,7 +39,7 @@ async def admin_start(c: Client, msg: Message):
     if __admin_db__.is_admin(chat_id):
         __admin_db__.set_admin_state(chat_id, State.ACTIVE_ADMIN)
     else:
-        __admin_db__.add(AdminDTO(chat_id, State.ACTIVE_ADMIN))
+        __admin_db__.add(AdminDTO(str(chat_id), State.ACTIVE_ADMIN))
 
     await c.send_message(chat_id, 'Вітаю, адмін!')
     await send_admin_menu(c, msg)
@@ -68,7 +69,7 @@ async def process(c: Client, msg: Message):
 
 
 async def view_lessons(c: Client, msg: Message):
-    lessons = __lessons_db__.get_lessons()
+    lessons = __lessons_db__.list()
     s = ''
     for l in lessons:
         s += f'{l.title} - {l.datetime} - {l.price}\n'
@@ -114,7 +115,7 @@ async def retrieve_user_data(c: Client, msg: Message, credentials: str):
 
     user = __db__.get_by_attr(attr, credentials)
     user_assignments = __applies_db__.get_by_user_id(user.id)
-    assigned_lessons = []
+    assigned_lessons: List[LessonDTO] = []
     for ua in user_assignments:
         assigned_lessons.append(__lessons_db__.get(ua.lesson_id))
 

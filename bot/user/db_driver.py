@@ -1,8 +1,6 @@
 import json
 import logging
 import redis
-from typing_extensions import override
-
 from bot.abstract import AbstractDb
 from bot.models import ClientDTO, Error
 from bot.static.states import State
@@ -15,8 +13,8 @@ class ClientsDb(AbstractDb):
 
     def __init__(self, _connection_pool_):
         logger.info('Connecting to database...')
-        self.r = redis.Redis(connection_pool=_connection_pool_)
-        self.__r_json__ = self.r.json()
+        self._r_ = redis.Redis(connection_pool=_connection_pool_)
+        self.__r_json__ = self._r_.json()
         logger.info('Connection to db established')
     
     def add(self, app_user: ClientDTO):
@@ -24,10 +22,9 @@ class ClientsDb(AbstractDb):
         self.__r_json__.arrappend('bot:users:clients', '$', ClientDTO.to_json_dict(app_user))
         logger.debug(f'End adding user {app_user.id=}')
 
-    @override
-    def get(self, tg_id: int) -> ClientDTO:
+    def get(self, tg_id: str) -> ClientDTO:
         logger.debug(f'Getting {tg_id=}')
-        res = run_query(lambda: self.__r_json__.get('bot:users:clients', f'$[?(@.id=={tg_id})]'))
+        res = run_query(lambda: self.__r_json__.get('bot:users:clients', f'$[?(@.id=="{tg_id}")]'))
         if res is Error:
             logger.debug(f'No such user with {tg_id=}')
             return ClientDTO.default()
@@ -56,24 +53,24 @@ class ClientsDb(AbstractDb):
         return clients
 
     def get_faq_section(self, idx):
-        res = self.r.get(f'faq:{idx}')
+        res = self._r_.get(f'faq:{idx}')
         if res is None:
             return res
         else:
             return res.decode('utf-8')
 
     def set_faq_section(self, idx, section):
-        self.r.set(f'faq:{idx}', section)
+        self._r_.set(f'faq:{idx}', section)
 
     def remove_faq_section(self, idx):
-        self.r.delete(f'faq:{idx}')
+        self._r_.delete(f'faq:{idx}')
 
     def set_state(self, user_id, state: State):
-        self.__r_json__.set('bot:users:clients', f'$[?(@.id=={user_id})].state', f'"{state.value}"')
+        self.__r_json__.set('bot:users:clients', f'$[?(@.id=="{user_id}")].state', f'"{state.value}"')
     
-    def exists(self, user_id):
+    def exists(self, user_id: str):
         logger.debug(f'Checking whether user exists - {user_id}')
-        num = self.__r_json__.get('bot:users:clients', f'$[?(@.id=={user_id})].id')
+        num = self.__r_json__.get('bot:users:clients', f'$[?(@.id=="{user_id}")].id')
         if num and len(num) == 1:
             return True
         else:
@@ -82,3 +79,6 @@ class ClientsDb(AbstractDb):
     def remove(self, idx) -> bool:
         res = self.__r_json__.delete('bot:users:clients', f'$[?(@.id=="{idx}")]')
         return res == 1
+
+    def list(self):
+        ...

@@ -1,16 +1,18 @@
+from typing_extensions import override
+
 from bot.abstract import DTO
 from bot.static.states import State, ApplyState
 from pyromod import Client
 
 
-class AdminDTO:
-    def __init__(self, _id_, _state_):
+class AdminDTO(DTO):
+    def __init__(self, _id_: str, _state_: State):
         self.id = _id_
         self.state = _state_
 
     @staticmethod
     def default():
-        return AdminDTO(0, 'default')
+        return AdminDTO('0', State.NOT_REGISTERED)
 
     @staticmethod
     def from_json(d: dict):
@@ -25,7 +27,7 @@ class AdminDTO:
 
 
 class ClientDTO(DTO):
-    def __init__(self, _id_, _username_, _name_, _phone_number_, _state_: State):
+    def __init__(self, _id_ :str, _username_, _name_, _phone_number_, _state_: State):
         self.id = _id_
         self.user_name = _username_
         self.name = _name_
@@ -34,7 +36,7 @@ class ClientDTO(DTO):
 
     @staticmethod
     def default():
-        return ClientDTO(0, 'default', '', '', State.NOT_REGISTERED)
+        return ClientDTO('0', 'default', '', '', State.NOT_REGISTERED)
 
     @staticmethod
     def from_json(d: dict):
@@ -53,7 +55,7 @@ class ClientDTO(DTO):
 
 
 class LessonDTO(DTO):
-    def __init__(self, _title_, _datetime_, _price_, _description_, _id_=0):
+    def __init__(self, _title_, _datetime_, _price_, _description_, _id_='0'):
         self.title = _title_
         self.datetime = _datetime_
         self.price = _price_
@@ -84,7 +86,7 @@ class LessonDTO(DTO):
 
 
 class ApplyDTO(DTO):
-    def __init__(self, _user_id_, _lesson_id_, _state_: ApplyState, _id_=0):
+    def __init__(self, _user_id_: str, _lesson_id_: str, _state_: ApplyState, _id_='0'):
         self.user_id = _user_id_
         self.lesson_id = _lesson_id_
         self.state = _state_
@@ -92,11 +94,11 @@ class ApplyDTO(DTO):
 
     @staticmethod
     def default():
-        return ApplyDTO(0, 0, ApplyState.NEW)
+        return ApplyDTO('0', '0', ApplyState.NEW)
 
     @staticmethod
     def from_json(d: dict):
-        return ApplyDTO(int(d['user_id']), d['lesson_id'], ApplyState(d['state']), _id_=d['id'])
+        return ApplyDTO(d['user_id'], d['lesson_id'], ApplyState(d['state']), _id_=d['id'])
 
     @staticmethod
     def to_json_dict(dto):
@@ -121,8 +123,8 @@ class Res:
 
 
 class Ok(Res):
-    pass
+    ...
 
 
 class Error(Res):
-    pass
+    ...

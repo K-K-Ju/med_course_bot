@@ -1,26 +1,33 @@
-class DTO:
+from abc import ABC, abstractmethod
+
+
+class DTO(ABC):
     @staticmethod
     def default():
-        TypeError(reason='use this method with concrete successor')
+        raise NotImplemented(reason='use this method with concrete successor')
 
     @staticmethod
     def from_json(d: dict):
-        TypeError(reason='use this method with concrete successor')
+        raise NotImplemented(reason='use this method with concrete successor')
 
     @staticmethod
     def to_json_dict(dto):
-        TypeError(reason='use this method with concrete successor')
+        raise NotImplemented(reason='use this method with concrete successor')
 
 
-class AbstractDb:
+class AbstractDb(ABC):
+    @abstractmethod
     def add(self, dto: DTO) -> bool:
-        TypeError(reason='use this method with concrete successor')
+        raise NotImplemented(reason='use this method with concrete successor')
 
+    @abstractmethod
     def get(self, idx) -> DTO:
-        TypeError(reason='use this method with concrete successor')
+        raise NotImplemented(reason='use this method with concrete successor')
 
+    @abstractmethod
     def remove(self, idx) -> bool:
-        TypeError(reason='use this method with concrete successor')
+        raise NotImplemented(reason='use this method with concrete successor')
 
+    @abstractmethod
     def list(self):
-        TypeError(reason='use this method with concrete successor')
+        raise NotImplemented(reason='use this method with concrete successor')

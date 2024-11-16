@@ -6,6 +6,7 @@ from pyrogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, InlineK
     CallbackQuery
 from pyromod import Client
 from pyromod.types import ListenerTypes
+from redis import ConnectionPool
 
 from bot.models import AppClient, ApplyDTO
 from bot.models import ClientDTO
@@ -20,7 +21,6 @@ from bot.user.db_driver import ClientsDb
 from bot.db_driver import LessonDb, ApplyDb
 
 logger = logging.getLogger('main_logger')
-logger.info('Test logger')
 app = AppClient.client
 
 __clients_db__: ClientsDb = None
@@ -28,7 +28,7 @@ __lessons_db__: LessonDb = None
 __apply_db__: ApplyDb = None
 
 
-def inject_dbs(redis_pool):
+def inject_dbs(redis_pool: ConnectionPool):
     global __clients_db__, __lessons_db__, __apply_db__
 
     __clients_db__ = ClientsDb(redis_pool)
@@ -42,9 +42,9 @@ async def send_start(c: Client, msg: Message):
     await send_menu(c, msg)
 
 
-async def send_menu(c, msg):
+async def send_menu(c: Client, msg: Message):
     keyboard = ReplyKeyboards.START_NOT_REGISTERED
-    if __clients_db__.exists(msg.from_user.id):
+    if __clients_db__.exists(str(msg.from_user.id)):
         keyboard = ReplyKeyboards.START
 
     await c.send_message(msg.chat.id,
@@ -53,8 +53,8 @@ async def send_menu(c, msg):
 
 
 async def show_status(c: Client, msg: Message):
-    client = __clients_db__.get(msg.from_user.id)
-    applies = __apply_db__.get_by_user_id(msg.from_user.id)
+    client = __clients_db__.get(str(msg.from_user.id))
+    applies = __apply_db__.get_by_user_id(str(msg.from_user.id))
     lessons = []
     for a in applies:
         les = __lessons_db__.get(a.lesson_id)
@@ -68,14 +68,14 @@ async def show_status(c: Client, msg: Message):
 
 async def register(c: Client, msg: Message):
     user_id = msg.from_user.id
-    if __clients_db__.exists(user_id):
+    if __clients_db__.exists(str(user_id)):
         await c.send_message(msg.chat.id, Messages.USE_MENU_REGISTRATION)
         return
 
     first_name = (await c.ask(msg.chat.id, 'Введіть ваше ім\'я', filters=filters.text)).text
     phone_number = await __get_phone_number__(c, msg)
 
-    app_user = ClientDTO(msg.chat.id,
+    app_user = ClientDTO(str(msg.chat.id),
                          msg.from_user.username, first_name,
                          phone_number, State.BASE)
     __clients_db__.add(app_user)
@@ -84,7 +84,7 @@ async def register(c: Client, msg: Message):
     await send_menu(c, msg)
 
 
-async def __get_phone_number__(c, msg):
+async def __get_phone_number__(c: Client, msg: Message):
     if msg.contact:
         return msg.contact.phone_number
     else:
@@ -103,7 +103,7 @@ async def __get_phone_number__(c, msg):
 
 
 async def __send_lessons_list__(c: Client, chat_id):
-    lessons = __lessons_db__.get_lessons()
+    lessons = __lessons_db__.list()
     # TODO filtration
     for l in lessons:
         data = {'user_id': chat_id, 'lesson_id': l.id}
@@ -148,7 +148,7 @@ async def show_faq(c: Client, msg: Message):
             msg = await c.ask(chat_id, faq_info)
 
 
-async def answer(c, msg: Message):
+async def answer(c: Client, msg: Message):
     chat_id = msg.chat.id
     if msg.text == MenuOptions.START_MENU.STATUS:
         await show_status(c, msg)

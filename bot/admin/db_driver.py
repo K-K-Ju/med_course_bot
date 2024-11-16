@@ -2,7 +2,7 @@ import logging
 
 import redis
 
-from bot.abstract import AbstractDb
+from bot.abstract import AbstractDb, DTO
 from bot.models import AdminDTO
 from bot.static.states import State
 
@@ -42,3 +42,12 @@ class AdminDb(AbstractDb):
 
     def set_admin_state(self, user_id, state: State):
         self.__r_json__.set('bot:users:admins', f'$[?(@.id=={user_id})].state', state.value)
+
+    def list(self):
+        ...
+
+    def remove(self, user_id):
+        ...
+
+    def get(self, idx) -> DTO:
+        ...
