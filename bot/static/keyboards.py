@@ -6,6 +6,7 @@ from pyrogram.types import (
 class MenuOptions:
     PLACEHOLDER = '👇Оберіть пункт меню'
     BACK = '◀️Назад'
+    ADMIN_PANEL = '📔Панель адміна'
 
     class START_MENU:
         STATUS = '⚡️Дізнатись стан акаунту'
@@ -44,6 +45,14 @@ class ReplyKeyboards:
     START = ReplyKeyboardMarkup([
         [KeyboardButton(MenuOptions.START_MENU.STATUS), KeyboardButton(MenuOptions.START_MENU.APPLY)],
         [KeyboardButton(MenuOptions.START_MENU.FAQ), KeyboardButton(MenuOptions.START_MENU.CONTACT_MANAGER)],
+    ], is_persistent=True,
+        placeholder=MenuOptions.PLACEHOLDER,
+        resize_keyboard=True)
+
+    ADMIN_USER_START = ReplyKeyboardMarkup([
+        [KeyboardButton(MenuOptions.START_MENU.STATUS), KeyboardButton(MenuOptions.START_MENU.APPLY)],
+        [KeyboardButton(MenuOptions.START_MENU.FAQ), KeyboardButton(MenuOptions.START_MENU.CONTACT_MANAGER)],
+        [KeyboardButton(MenuOptions.ADMIN_PANEL)]
     ], is_persistent=True,
         placeholder=MenuOptions.PLACEHOLDER,
         resize_keyboard=True)

@@ -8,6 +8,8 @@ from pyromod import Client
 from pyromod.types import ListenerTypes
 from redis import ConnectionPool
 
+import bot.admin.handlers
+from bot.admin.db_driver import AdminDb
 from bot.models import AppClient, ApplyDTO
 from bot.models import ClientDTO
 from bot.static import keyboards
@@ -23,17 +25,19 @@ from bot.db_driver import LessonDb, ApplyDb
 logger = logging.getLogger('main_logger')
 app = AppClient.client
 
-__clients_db__: ClientsDb = None
-__lessons_db__: LessonDb = None
-__apply_db__: ApplyDb = None
+_clients_db_: ClientsDb
+_lessons_db_: LessonDb
+_apply_db_: ApplyDb
+_admin_db_: AdminDb
 
 
 def inject_dbs(redis_pool: ConnectionPool):
-    global __clients_db__, __lessons_db__, __apply_db__
+    global _clients_db_, _lessons_db_, _apply_db_, _admin_db_
 
-    __clients_db__ = ClientsDb(redis_pool)
-    __lessons_db__ = LessonDb(redis_pool)
-    __apply_db__ = ApplyDb(redis_pool)
+    _clients_db_ = ClientsDb(redis_pool)
+    _lessons_db_ = LessonDb(redis_pool)
+    _apply_db_ = ApplyDb(redis_pool)
+    _admin_db_ = AdminDb(redis_pool)
 
 
 async def send_start(c: Client, msg: Message):
@@ -44,8 +48,11 @@ async def send_start(c: Client, msg: Message):
 
 async def send_menu(c: Client, msg: Message):
     keyboard = ReplyKeyboards.START_NOT_REGISTERED
-    if __clients_db__.exists(str(msg.from_user.id)):
+    # TODO caching
+    if _clients_db_.exists(str(msg.from_user.id)):
         keyboard = ReplyKeyboards.START
+        if _admin_db_.is_admin(str(msg.from_user.id)):
+            keyboard = ReplyKeyboards.ADMIN_USER_START
 
     await c.send_message(msg.chat.id,
                          'Оберіть потрібний пункт меню👇',
@@ -53,11 +60,11 @@ async def send_menu(c: Client, msg: Message):
 
 
 async def show_status(c: Client, msg: Message):
-    client = __clients_db__.get(str(msg.from_user.id))
-    applies = __apply_db__.get_by_user_id(str(msg.from_user.id))
+    client = _clients_db_.get(str(msg.from_user.id))
+    applies = _apply_db_.get_by_user_id(str(msg.from_user.id))
     lessons = []
     for a in applies:
-        les = __lessons_db__.get(a.lesson_id)
+        les = _lessons_db_.get(a.lesson_id)
         lessons.append(les)
     text = f'**Ім\'я**: {client.name}\n**Записи**:\n\n'
     for i in range(0, len(applies)):
@@ -68,7 +75,7 @@ async def show_status(c: Client, msg: Message):
 
 async def register(c: Client, msg: Message):
     user_id = msg.from_user.id
-    if __clients_db__.exists(str(user_id)):
+    if _clients_db_.exists(str(user_id)):
         await c.send_message(msg.chat.id, Messages.USE_MENU_REGISTRATION)
         return
 
@@ -78,7 +85,7 @@ async def register(c: Client, msg: Message):
     app_user = ClientDTO(str(msg.chat.id),
                          msg.from_user.username, first_name,
                          phone_number, State.BASE)
-    __clients_db__.add(app_user)
+    _clients_db_.add(app_user)
     logger.debug(f'Registered new user id={user_id}')
     await c.send_message(msg.chat.id, 'Ви успішно зараєструвались! Тепер вам доступно більше функцій😉')
     await send_menu(c, msg)
@@ -103,7 +110,7 @@ async def __get_phone_number__(c: Client, msg: Message):
 
 
 async def __send_lessons_list__(c: Client, chat_id):
-    lessons = __lessons_db__.list()
+    lessons = _lessons_db_.list()
     # TODO filtration
     for l in lessons:
         data = {'user_id': chat_id, 'lesson_id': l.id}
@@ -117,7 +124,7 @@ async def __send_lessons_list__(c: Client, chat_id):
 async def apply(c: Client, query: CallbackQuery):
     data = json.loads(query.data)
     a = ApplyDTO(data['user_id'], data['lesson_id'], ApplyState.NEW)
-    success = __apply_db__.add(a)
+    success = _apply_db_.add(a)
     if success:
         await c.send_message(data['user_id'], 'Ви записались на урок')
     else:
@@ -129,19 +136,19 @@ async def show_faq(c: Client, msg: Message):
     chat_id = msg.chat.id
     msg = await c.ask(chat_id, 'Choose section', reply_markup=ReplyKeyboards.FAQ)
     while True:
-        sec = __clients_db__.get_faq_section(chat_id)
+        sec = _clients_db_.get_faq_section(chat_id)
 
         if msg.text == MenuOptions.BACK:
             if sec is None:
                 await send_menu(c, msg)
                 break
-            __clients_db__.remove_faq_section(chat_id)
+            _clients_db_.remove_faq_section(chat_id)
             msg = await c.ask(chat_id, 'Choose option', reply_markup=ReplyKeyboards.FAQ)
             continue
 
         if sec is None:
             reply_keyboard = keyboards.faq_mapping[msg.text]['keyboard']
-            __clients_db__.set_faq_section(chat_id, msg.text)
+            _clients_db_.set_faq_section(chat_id, msg.text)
             msg = await c.ask(chat_id, 'Choose option', reply_markup=reply_keyboard)
         else:
             faq_info = keyboards.faq_mapping[sec][msg.text]
@@ -149,7 +156,7 @@ async def show_faq(c: Client, msg: Message):
 
 
 async def answer(c: Client, msg: Message):
-    chat_id = msg.chat.id
+    chat_id = str(msg.chat.id)
     if msg.text == MenuOptions.START_MENU.STATUS:
         await show_status(c, msg)
     elif msg.text == MenuOptions.START_MENU.APPLY:
@@ -162,3 +169,5 @@ async def answer(c: Client, msg: Message):
         await c.send_message(chat_id, 'Перейдіть до бота підтримки <a href="https://t.me/med_school_support_bot">посилання</a>')
     elif msg.text == MenuOptions.START_MENU.MENU:
         await send_menu(c, msg)
+    elif msg.text == MenuOptions.ADMIN_PANEL:
+        await bot.admin.handlers.admin_start(c, msg)

@@ -12,21 +12,21 @@ import bot
 from bot.db_driver import LessonDb, ApplyDb
 from bot.user.db_driver import ClientsDb
 from bot.admin.db_driver import AdminDb
-from bot.models import AppClient, LessonDTO, AdminDTO, ApplyDTO
+from bot.models import AppClient, LessonDTO, AdminDTO
 from bot.static.keyboards import AdminReplyKeyboards, MenuOptions
 from bot.static.states import State
 
 app = AppClient.client
 log = logging.getLogger()
 
-__admin_db__: AdminDb = None
-__lessons_db__: LessonDb = None
-__db__: ClientsDb = None
-__applies_db__: ApplyDb = None
+__admin_db__: AdminDb
+_lessons_db_: LessonDb
+__db__: ClientsDb
+__applies_db__: ApplyDb
 
 
 def inject_dbs(redis_pool):
-    global __db__, __lessons_db__, __admin_db__, __applies_db__
+    global __db__, _lessons_db_, __admin_db__, __applies_db__
 
     __db__ = ClientsDb(redis_pool)
     __lessons_db__ = LessonDb(redis_pool)
@@ -35,11 +35,11 @@ def inject_dbs(redis_pool):
 
 
 async def admin_start(c: Client, msg: Message):
-    chat_id = msg.chat.id
+    chat_id = str(msg.chat.id)
     if __admin_db__.is_admin(chat_id):
         __admin_db__.set_admin_state(chat_id, State.ACTIVE_ADMIN)
     else:
-        __admin_db__.add(AdminDTO(str(chat_id), State.ACTIVE_ADMIN))
+        __admin_db__.add(AdminDTO(chat_id, State.ACTIVE_ADMIN))
 
     await c.send_message(chat_id, 'Вітаю, адмін!')
     await send_admin_menu(c, msg)
@@ -60,7 +60,7 @@ async def process(c: Client, msg: Message):
         credentials = (await c.ask(msg.chat.id, 'Введіть номер телефону, username або Telegram id')).text
         await retrieve_user_data(c, msg, credentials)
     elif text == MenuOptions.ADMIN_OPTIONS.EXIT:
-        __admin_db__.set_admin_state(msg.from_user.id, State.BASE)
+        __admin_db__.set_admin_state(str(msg.from_user.id), State.BASE)
         await c.send_message(msg.chat.id, 'Ви вийшли з панелі адміна')
         await bot.user.handlers.send_menu(c, msg)
         return
@@ -69,7 +69,7 @@ async def process(c: Client, msg: Message):
 
 
 async def view_lessons(c: Client, msg: Message):
-    lessons = __lessons_db__.list()
+    lessons = _lessons_db_.list()
     s = ''
     for l in lessons:
         s += f'{l.title} - {l.datetime} - {l.price}\n'
@@ -97,7 +97,7 @@ async def add_lesson(c: Client, msg: Message):
     price = (await c.ask(chat_id, 'Введіть ціну уроку', filters=filters.private)).text
     description = (await c.ask(chat_id, 'Введіть опис уроку', filters=filters.private)).text
 
-    __lessons_db__.add(LessonDTO(title, str_datetime, price, description))
+    _lessons_db_.add(LessonDTO(title, str_datetime, price, description))
 
     await c.send_message(chat_id, f'Урок доданий - {title}')
     await send_admin_menu(c, msg)
@@ -117,7 +117,7 @@ async def retrieve_user_data(c: Client, msg: Message, credentials: str):
     user_assignments = __applies_db__.get_by_user_id(user.id)
     assigned_lessons: List[LessonDTO] = []
     for ua in user_assignments:
-        assigned_lessons.append(__lessons_db__.get(ua.lesson_id))
+        assigned_lessons.append(_lessons_db_.get(ua.lesson_id))
 
     await c.send_message(msg.chat.id,
                          f'**User**:\n\tId: {user.id}\n\t**username**: {user.user_name}\n\t**phone_number**: {user.phone_number}\n\n'+

@@ -24,24 +24,24 @@ class AdminDb(AbstractDb):
         else:
             logger.info(f'Failed to add admin {admin_dto.id=}')
 
-    def is_admin(self, user_id):
+    def is_admin(self, user_id: str):
         logger.debug(f'Checking whether {user_id} is admin')
-        res = self.__r_json__.get('bot:users:admins', f'$[?(@.id=={user_id})].id')
+        res = self.__r_json__.get('bot:users:admins', f'$[?(@.id=="{user_id}")].id')
 
         if res and len(res) == 1:
             return True
         else:
             return False
 
-    def get_state(self, user_id) -> State:
-        res = self.__r_json__.get('bot:users:admins', f'$[?(@.id=={user_id})].state')
+    def get_state(self, user_id: str) -> State:
+        res = self.__r_json__.get('bot:users:admins', f'$[?(@.id=="{user_id}")].state')
         if res and len(res) == 1:
             return State(res[0])
         else:
             return State.NOT_REGISTERED
 
-    def set_admin_state(self, user_id, state: State):
-        self.__r_json__.set('bot:users:admins', f'$[?(@.id=={user_id})].state', state.value)
+    def set_admin_state(self, user_id: str, state: State):
+        self.__r_json__.set('bot:users:admins', f'$[?(@.id=="{user_id}")].state', state.value)
 
     def list(self):
         ...

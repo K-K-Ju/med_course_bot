@@ -1,9 +1,10 @@
 import logging
 
 import redis
+from typing import List, NoReturn
 
 from bot.abstract import AbstractDb
-from bot.models import LessonDTO, ApplyDTO
+from bot.models import LessonDTO, ApplyDTO, Res
 from bot.static.states import State
 
 logger = logging.getLogger('main_logger')
@@ -32,7 +33,7 @@ class LessonDb(AbstractDb):
         lessons = [LessonDTO.from_json(l) for l in lessons_json_arr]
         return lessons
 
-    def get(self, idx: str):
+    def get(self, idx: str) -> LessonDTO:
         res = self.__r_json__.get('bot:lessons', f'$[?(@.id=="{idx}")]')
         if len(res) == 0:
             return None
@@ -52,14 +53,14 @@ class ApplyDb(AbstractDb):
         self.APPLY_ID_GEN = 'apply_id_gen'
         self.__r__.set(self.APPLY_ID_GEN, 0, nx=True)
 
-    def add(self, apply: ApplyDTO):
+    def add(self, apply: ApplyDTO) -> bool:
         apply_id = 'apply:' + (self.__r__.get(self.APPLY_ID_GEN)).decode('utf-8')
         apply.id = apply_id
         res = self.__r_json__.arrappend('bot:applies', '$', ApplyDTO.to_json_dict(apply)) is not None
         self.__r__.incrby(self.APPLY_ID_GEN, 1)
         return res
 
-    def get(self, idx: str):
+    def get(self, idx: str) -> ApplyDTO:
         res = self.__r_json__.get('bot:applies', f'$.[?(@.id=="{idx}")]')
         if len(res) == 0:
             return None
@@ -68,10 +69,10 @@ class ApplyDb(AbstractDb):
         apply = ApplyDTO.from_json(apply_dict)
         return apply
 
-    def set_apply_state(self, apply_id: str, state: State):
+    def set_apply_state(self, apply_id: str, state: State) -> NoReturn:
         self.__r_json__.set('bot:applies', f'$.[?(@.id="{apply_id}")].state', state.value)
 
-    def get_by_user_id(self, user_id: str):
+    def get_by_user_id(self, user_id: str) -> List[ApplyDTO]:
         res = self.__r_json__.get('bot:applies', f'$.[?(@.user_id=={user_id})]')
 
         if len(res) == 0:
