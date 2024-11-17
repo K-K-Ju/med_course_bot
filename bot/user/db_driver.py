@@ -10,21 +10,21 @@ logger = logging.getLogger('main_logger')
 
 
 class ClientsDb(AbstractDb):
-
     def __init__(self, _connection_pool_):
         logger.info('Connecting to database...')
+        self._key_path_ = 'bot:users:clients'
         self._r_ = redis.Redis(connection_pool=_connection_pool_)
-        self.__r_json__ = self._r_.json()
+        self._r_json_ = self._r_.json()
         logger.info('Connection to db established')
     
     def add(self, app_user: ClientDTO):
         logger.debug(f'Adding {app_user.id=}')
-        self.__r_json__.arrappend('bot:users:clients', '$', ClientDTO.to_json_dict(app_user))
+        self._r_json_.arrappend(self._key_path_, '$', ClientDTO.to_json_dict(app_user))
         logger.debug(f'End adding user {app_user.id=}')
 
     def get(self, tg_id: str) -> ClientDTO:
         logger.debug(f'Getting {tg_id=}')
-        res = run_query(lambda: self.__r_json__.get('bot:users:clients', f'$[?(@.id=="{tg_id}")]'))
+        res = run_query(lambda: self._r_json_.get(self._key_path_, f'$[?(@.id=="{tg_id}")]'))
         if res is Error:
             logger.debug(f'No such user with {tg_id=}')
             return ClientDTO.default()
@@ -35,7 +35,7 @@ class ClientsDb(AbstractDb):
 
     def get_by_attr(self, attr, value) -> ClientDTO:
         logger.debug(f'Retrieving user by {attr}={value}')
-        res = run_query(lambda: self.__r_json__.get('bot:users:clients', f"$[?(@.{attr}=='{value}')]"))
+        res = run_query(lambda: self._r_json_.get(self._key_path_, f"$[?(@.{attr}=='{value}')]"))
 
         if res is Error:
             logger.debug(f'No such user with {attr}={value}')
@@ -47,7 +47,7 @@ class ClientsDb(AbstractDb):
 
 
     def get_by_state(self, state: State):
-        res = self.__r_json__.get('bot:users:clients', f'$[?(@.state={state.value})]')
+        res = self._r_json_.get(self._key_path_, f'$[?(@.state={state.value})]')
         clients_json_arr = res.val
         clients = [ClientDTO.from_json(json.loads(c)) for c in clients_json_arr]
         return clients
@@ -66,18 +66,18 @@ class ClientsDb(AbstractDb):
         self._r_.delete(f'faq:{idx}')
 
     def set_state(self, user_id, state: State):
-        self.__r_json__.set('bot:users:clients', f'$[?(@.id=="{user_id}")].state', f'"{state.value}"')
+        self._r_json_.set(self._key_path_, f'$[?(@.id=="{user_id}")].state', f'"{state.value}"')
     
     def exists(self, user_id: str):
         logger.debug(f'Checking whether user exists - {user_id}')
-        num = self.__r_json__.get('bot:users:clients', f'$[?(@.id=="{user_id}")].id')
+        num = self._r_json_.get(self._key_path_, f'$[?(@.id=="{user_id}")].id')
         if num and len(num) == 1:
             return True
         else:
             return False
 
     def remove(self, idx) -> bool:
-        res = self.__r_json__.delete('bot:users:clients', f'$[?(@.id=="{idx}")]')
+        res = self._r_json_.delete(self._key_path_, f'$[?(@.id=="{idx}")]')
         return res == 1
 
     def list(self):

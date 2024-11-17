@@ -1,10 +1,10 @@
 import logging
+from typing import List, NoReturn, Optional
 
 import redis
-from typing import List, NoReturn
 
 from bot.abstract import AbstractDb
-from bot.models import LessonDTO, ApplyDTO, Res
+from bot.models import LessonDTO, ApplyDTO
 from bot.static.states import State
 
 logger = logging.getLogger('main_logger')
@@ -12,29 +12,30 @@ logger = logging.getLogger('main_logger')
 
 class LessonDb(AbstractDb):
     def __init__(self, _connection_pool_):
-        self.__r__ = redis.Redis(connection_pool=_connection_pool_)
-        self.__r_json__ = self.__r__.json()
+        self._key_path_ = 'bot:lessons'
+        self._r_ = redis.Redis(connection_pool=_connection_pool_)
+        self._r_json_ = self._r_.json()
         self.LESSON_ID_GEN = 'lesson_id_gen'
-        self.__r__.set(self.LESSON_ID_GEN, 0, nx=True)
+        self._r_.set(self.LESSON_ID_GEN, 0, nx=True)
 
     def add(self, lesson: LessonDTO):
 
         logger.debug(f'Adding lesson with {lesson.title=}...')
-        lesson_id = 'lesson:' + (self.__r__.get(self.LESSON_ID_GEN)).decode('utf-8')
+        lesson_id = 'lesson:' + (self._r_.get(self.LESSON_ID_GEN)).decode('utf-8')
         lesson.id = lesson_id
 
-        res = self.__r__.json().arrappend('bot:lessons', '$', LessonDTO.to_json_dict(lesson)) is not None
+        res = self._r_.json().arrappend(self._key_path_, '$', LessonDTO.to_json_dict(lesson)) is not None
         logger.debug(f'Finished adding lesson with {lesson_id=}')
-        self.__r__.incrby(self.LESSON_ID_GEN, 1)
+        self._r_.incrby(self.LESSON_ID_GEN, 1)
         return res
 
     def list(self):
-        lessons_json_arr = self.__r_json__.get('bot:lessons', '$')[0]
+        lessons_json_arr = self._r_json_.get(self._key_path_, '$')[0]
         lessons = [LessonDTO.from_json(l) for l in lessons_json_arr]
         return lessons
 
-    def get(self, idx: str) -> LessonDTO:
-        res = self.__r_json__.get('bot:lessons', f'$[?(@.id=="{idx}")]')
+    def get(self, idx: str) -> Optional[LessonDTO]:
+        res = self._r_json_.get(self._key_path_, f'$[?(@.id=="{idx}")]')
         if len(res) == 0:
             return None
 
@@ -48,20 +49,21 @@ class LessonDb(AbstractDb):
 
 class ApplyDb(AbstractDb):
     def __init__(self, _connection_pool_):
-        self.__r__ = redis.Redis(connection_pool=_connection_pool_)
-        self.__r_json__ = self.__r__.json()
+        self._r_ = redis.Redis(connection_pool=_connection_pool_)
+        self._key_path_ = 'bot:applies'
+        self._r_json_ = self._r_.json()
         self.APPLY_ID_GEN = 'apply_id_gen'
-        self.__r__.set(self.APPLY_ID_GEN, 0, nx=True)
+        self._r_.set(self.APPLY_ID_GEN, 0, nx=True)
 
     def add(self, apply: ApplyDTO) -> bool:
-        apply_id = 'apply:' + (self.__r__.get(self.APPLY_ID_GEN)).decode('utf-8')
+        apply_id = 'apply:' + (self._r_.get(self.APPLY_ID_GEN)).decode('utf-8')
         apply.id = apply_id
-        res = self.__r_json__.arrappend('bot:applies', '$', ApplyDTO.to_json_dict(apply)) is not None
-        self.__r__.incrby(self.APPLY_ID_GEN, 1)
+        res = self._r_json_.arrappend(self._key_path_, '$', ApplyDTO.to_json_dict(apply)) is not None
+        self._r_.incrby(self.APPLY_ID_GEN, 1)
         return res
 
-    def get(self, idx: str) -> ApplyDTO:
-        res = self.__r_json__.get('bot:applies', f'$.[?(@.id=="{idx}")]')
+    def get(self, idx: str) -> Optional[ApplyDTO]:
+        res = self._r_json_.get(self._key_path_, f'$.[?(@.id=="{idx}")]')
         if len(res) == 0:
             return None
 
@@ -70,10 +72,10 @@ class ApplyDb(AbstractDb):
         return apply
 
     def set_apply_state(self, apply_id: str, state: State) -> NoReturn:
-        self.__r_json__.set('bot:applies', f'$.[?(@.id="{apply_id}")].state', state.value)
+        self._r_json_.set(self._key_path_, f'$.[?(@.id="{apply_id}")].state', state.value)
 
     def get_by_user_id(self, user_id: str) -> List[ApplyDTO]:
-        res = self.__r_json__.get('bot:applies', f'$.[?(@.user_id=={user_id})]')
+        res = self._r_json_.get(self._key_path_, f'$.[?(@.user_id=={user_id})]')
 
         if len(res) == 0:
             return []
