@@ -103,7 +103,7 @@ async def add_lesson(c: Client, msg: Message):
     await send_admin_menu(c, msg)
 
 async def retrieve_user_data(c: Client, msg: Message, credentials: str):
-    phone_pattern = r'^\+?\d+$'
+    phone_pattern = r'^\+?3?8?(0-?\d{2}-?\d{3}-?\d{2}-?\d{2})$'
     username_pattern = r"^@\S+$"
 
     attr = 'id'

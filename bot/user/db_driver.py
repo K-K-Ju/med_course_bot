@@ -35,7 +35,7 @@ class ClientsDb(AbstractDb):
 
     def get_by_attr(self, attr, value) -> ClientDTO:
         logger.debug(f'Retrieving user by {attr}={value}')
-        res = run_query(lambda: self._r_json_.get(self._key_path_, f"$[?(@.{attr}=='{value}')]"))
+        res = run_query(lambda: self._r_json_.get(self._key_path_, f'$[?(@.{attr}=="{value}")]'))
 
         if res is Error:
             logger.debug(f'No such user with {attr}={value}')
