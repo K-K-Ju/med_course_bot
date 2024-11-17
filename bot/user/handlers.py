@@ -80,7 +80,7 @@ async def register(c: Client, msg: Message):
         return
 
     first_name = (await c.ask(msg.chat.id, 'Введіть ваше ім\'я', filters=filters.text)).text
-    phone_number = await __get_phone_number__(c, msg)
+    phone_number = await _get_phone_number_(c, msg)
 
     app_user = ClientDTO(str(msg.chat.id),
                          msg.from_user.username, first_name,
@@ -91,7 +91,7 @@ async def register(c: Client, msg: Message):
     await send_menu(c, msg)
 
 
-async def __get_phone_number__(c: Client, msg: Message):
+async def _get_phone_number_(c: Client, msg: Message):
     if msg.contact:
         return msg.contact.phone_number
     else:
@@ -109,7 +109,7 @@ async def __get_phone_number__(c: Client, msg: Message):
         return contact_msg.contact.phone_number
 
 
-async def __send_lessons_list__(c: Client, chat_id):
+async def _send_lessons_list_(c: Client, chat_id):
     lessons = _lessons_db_.list()
     # TODO filtration
     for l in lessons:
@@ -127,9 +127,12 @@ async def apply(c: Client, query: CallbackQuery):
     success = _apply_db_.add(a)
     if success:
         await c.send_message(data['user_id'], 'Ви записались на урок')
+        await query.answer()
     else:
         logger.error(f'Error while applying - {query.from_user.id=}, {a.lesson_id=}')
         await c.send_message(data['user_id'], 'Виникла помилка. Спробуйте пізніше або зв\'яжіться з менеджером')
+        await query.answer()
+
 
 
 async def show_faq(c: Client, msg: Message):
@@ -154,13 +157,15 @@ async def show_faq(c: Client, msg: Message):
             faq_info = keyboards.faq_mapping[sec][msg.text]
             msg = await c.ask(chat_id, faq_info)
 
+async def receive_recipe(c: Client, msg: Message):
+    ...
 
 async def answer(c: Client, msg: Message):
     chat_id = str(msg.chat.id)
     if msg.text == MenuOptions.START_MENU.STATUS:
         await show_status(c, msg)
     elif msg.text == MenuOptions.START_MENU.APPLY:
-        await __send_lessons_list__(c, msg.chat.id)
+        await _send_lessons_list_(c, msg.chat.id)
     elif msg.text == MenuOptions.START_MENU.FAQ:
         await show_faq(c, msg)
     elif msg.text == MenuOptions.START_MENU.REGISTER:
@@ -169,5 +174,8 @@ async def answer(c: Client, msg: Message):
         await c.send_message(chat_id, 'Перейдіть до бота підтримки <a href="https://t.me/med_school_support_bot">посилання</a>')
     elif msg.text == MenuOptions.START_MENU.MENU:
         await send_menu(c, msg)
+    elif msg.text == MenuOptions.START_MENU.SEND_RECIPE:
+        if msg.document:
+            await receive_recipe(c, msg)
     elif msg.text == MenuOptions.ADMIN_PANEL:
         await bot.admin.handlers.admin_start(c, msg)

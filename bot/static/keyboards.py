@@ -15,6 +15,7 @@ class MenuOptions:
         REGISTER = '✒️Реєстрація'
         CONTACT_MANAGER = '✋Зв\'язатись з менеджером'
         MENU = '📔Головне меню'
+        SEND_RECIPE = '🧾Відправити чек'
 
     class FAQ_OPTIONS:
         ABOUT_SCHOOL = 'Про школу'

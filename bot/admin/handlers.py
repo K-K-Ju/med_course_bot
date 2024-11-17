@@ -19,27 +19,27 @@ from bot.static.states import State
 app = AppClient.client
 log = logging.getLogger()
 
-__admin_db__: AdminDb
+_admin_db_: AdminDb
 _lessons_db_: LessonDb
-__db__: ClientsDb
-__applies_db__: ApplyDb
+_db_: ClientsDb
+_applies_db_: ApplyDb
 
 
 def inject_dbs(redis_pool):
-    global __db__, _lessons_db_, __admin_db__, __applies_db__
+    global _db_, _lessons_db_, _admin_db_, _applies_db_
 
-    __db__ = ClientsDb(redis_pool)
-    __lessons_db__ = LessonDb(redis_pool)
-    __admin_db__ = AdminDb(redis_pool)
-    __applies_db__ = ApplyDb(redis_pool)
+    _db_ = ClientsDb(redis_pool)
+    _lessons_db_ = LessonDb(redis_pool)
+    _admin_db_ = AdminDb(redis_pool)
+    _applies_db_ = ApplyDb(redis_pool)
 
 
 async def admin_start(c: Client, msg: Message):
     chat_id = str(msg.chat.id)
-    if __admin_db__.is_admin(chat_id):
-        __admin_db__.set_admin_state(chat_id, State.ACTIVE_ADMIN)
+    if _admin_db_.is_admin(chat_id):
+        _admin_db_.set_admin_state(chat_id, State.ACTIVE_ADMIN)
     else:
-        __admin_db__.add(AdminDTO(chat_id, State.ACTIVE_ADMIN))
+        _admin_db_.add(AdminDTO(chat_id, State.ACTIVE_ADMIN))
 
     await c.send_message(chat_id, 'Вітаю, адмін!')
     await send_admin_menu(c, msg)
@@ -60,7 +60,7 @@ async def process(c: Client, msg: Message):
         credentials = (await c.ask(msg.chat.id, 'Введіть номер телефону, username або Telegram id')).text
         await retrieve_user_data(c, msg, credentials)
     elif text == MenuOptions.ADMIN_OPTIONS.EXIT:
-        __admin_db__.set_admin_state(str(msg.from_user.id), State.BASE)
+        _admin_db_.set_admin_state(str(msg.from_user.id), State.BASE)
         await c.send_message(msg.chat.id, 'Ви вийшли з панелі адміна')
         await bot.user.handlers.send_menu(c, msg)
         return
@@ -113,8 +113,8 @@ async def retrieve_user_data(c: Client, msg: Message, credentials: str):
         attr = 'username'
         credentials = credentials[1:]
 
-    user = __db__.get_by_attr(attr, credentials)
-    user_assignments = __applies_db__.get_by_user_id(user.id)
+    user = _db_.get_by_attr(attr, credentials)
+    user_assignments = _applies_db_.get_by_user_id(user.id)
     assigned_lessons: List[LessonDTO] = []
     for ua in user_assignments:
         assigned_lessons.append(_lessons_db_.get(ua.lesson_id))
