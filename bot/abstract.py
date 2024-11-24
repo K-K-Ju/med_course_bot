@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+import redis
+
 
 class DTO(ABC):
     @staticmethod
@@ -16,6 +18,10 @@ class DTO(ABC):
 
 
 class AbstractDb(ABC):
+    def __init__(self, connection_pool):
+        self._r_ = redis.Redis(connection_pool=connection_pool)
+        self._r_json_ = self._r_.json()
+
     @abstractmethod
     def add(self, dto: DTO) -> bool:
         raise NotImplemented(reason='use this method with concrete successor')
@@ -31,3 +37,6 @@ class AbstractDb(ABC):
     @abstractmethod
     def list(self):
         raise NotImplemented(reason='use this method with concrete successor')
+
+class Handler(ABC):
+    ...

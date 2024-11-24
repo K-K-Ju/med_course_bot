@@ -11,10 +11,9 @@ logger = logging.getLogger('main_logger')
 
 
 class LessonDb(AbstractDb):
-    def __init__(self, _connection_pool_):
+    def __init__(self, connection_pool):
+        super().__init__(connection_pool)
         self._key_path_ = 'bot:lessons'
-        self._r_ = redis.Redis(connection_pool=_connection_pool_)
-        self._r_json_ = self._r_.json()
         self.LESSON_ID_GEN = 'lesson_id_gen'
         self._r_.set(self.LESSON_ID_GEN, 0, nx=True)
 
@@ -48,10 +47,9 @@ class LessonDb(AbstractDb):
 
 
 class ApplyDb(AbstractDb):
-    def __init__(self, _connection_pool_):
-        self._r_ = redis.Redis(connection_pool=_connection_pool_)
+    def __init__(self, connection_pool):
+        super().__init__(connection_pool)
         self._key_path_ = 'bot:applies'
-        self._r_json_ = self._r_.json()
         self.APPLY_ID_GEN = 'apply_id_gen'
         self._r_.set(self.APPLY_ID_GEN, 0, nx=True)
 

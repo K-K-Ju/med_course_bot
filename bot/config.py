@@ -1,38 +1,17 @@
-import json
-import logging
+from pydantic_settings import SettingsConfigDict, BaseSettings
+from pydantic import Field
 
 
-class AppConfig:
-    admin_key: str
-    api_hash: str
-    api_id: int
-    bot_token: str
-    log_lvl: str
-    log_file_path: str
-    redis_host: str
-    redis_port: int
+class AppConfig(BaseSettings):
+    model_config = SettingsConfigDict(env_file='../.env', env_file_encoding='utf-8', case_sensitive=False)
 
+    admin_key: str = Field('admin_key', validate_default=False)
+    api_hash: str = Field('api_hash', validate_default=False)
+    api_id: int = Field('api_id', validate_default=False)
+    bot_token: str = Field('bot_token', validate_default=False)
+    log_lvl: str = Field('log_lvl', validate_default=False)
+    log_file_path: str = Field('log_file_path', validate_default=False)
+    redis_host: str = Field('redis_host', validate_default=False)
+    redis_port: int = Field('redis_port', validate_default=False,)
 
 app_config = AppConfig()
-
-
-def __load_config__(path):
-    with open(path) as secrets_file:
-        cfg: dict = json.load(secrets_file)
-        return cfg
-
-
-def init_config(path):
-    cfg = __load_config__(path)
-    app_config.api_hash = cfg['API_HASH']
-    app_config.api_id = cfg['API_ID']
-    app_config.bot_token = cfg['BOT_TOKEN']
-    app_config.log_lvl = logging.getLevelNamesMapping()[cfg['LOG_LVL']]
-    app_config.log_file_path = cfg['LOG_FILE_PATH']
-    app_config.redis_port = cfg['REDIS_PORT']
-    app_config.redis_host = cfg['REDIS_HOST']
-
-    try:
-        app_config.admin_key = cfg['ADMIN_KEY']
-    except KeyError:
-        app_config.admin_key = ''

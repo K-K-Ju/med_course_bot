@@ -10,11 +10,10 @@ logger = logging.getLogger('main_logger')
 
 
 class AdminDb(AbstractDb):
-    def __init__(self, _connection_pool_):
+    def __init__(self, connection_pool):
+        super().__init__(connection_pool)
         logger.info('Preparing admin db driver...')
         self._key_path_ = 'bot:users:admins'
-        self._r_ = redis.StrictRedis(connection_pool=_connection_pool_)
-        self._r_json_ = self._r_.json()
         logger.info('Admin db preparing is finished')
 
     def add(self, admin_dto: AdminDTO):

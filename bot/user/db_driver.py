@@ -1,6 +1,5 @@
 import json
 import logging
-import redis
 from bot.abstract import AbstractDb
 from bot.models import ClientDTO, Error
 from bot.static.states import State
@@ -10,11 +9,10 @@ logger = logging.getLogger('main_logger')
 
 
 class ClientsDb(AbstractDb):
-    def __init__(self, _connection_pool_):
+    def __init__(self, connection_pool):
+        super().__init__(connection_pool)
         logger.info('Connecting to database...')
         self._key_path_ = 'bot:users:clients'
-        self._r_ = redis.Redis(connection_pool=_connection_pool_)
-        self._r_json_ = self._r_.json()
         logger.info('Connection to db established')
     
     def add(self, app_user: ClientDTO):
