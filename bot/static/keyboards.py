@@ -18,13 +18,12 @@ class MenuOptions:
         SEND_RECIPE = '🧾Відправити чек'
 
     class FAQ_OPTIONS:
-        ABOUT_SCHOOL = 'Про школу'
+        ABOUT_SCHOOL = 'Про нас'
         WHO_SUITS = 'Кому підійде'
         MONEY = 'Оплата'
 
     class ABOUT_SHOOL_OPTIONS:
         WHO_WE_ARE = 'Хто ми і заради чого збір'
-        BENEFITS = 'Для чого це Вам?'
         HOW = 'Як ми це плануємо зробити?'
 
     class WHO_SUITS_OPTIONS:
@@ -74,7 +73,7 @@ class ReplyKeyboards:
     ABOUT_SCHOOL = ReplyKeyboardMarkup([
         [KeyboardButton(MenuOptions.ABOUT_SHOOL_OPTIONS.WHO_WE_ARE),
          KeyboardButton(MenuOptions.ABOUT_SHOOL_OPTIONS.HOW)],
-        [KeyboardButton(MenuOptions.ABOUT_SHOOL_OPTIONS.BENEFITS), KeyboardButton(MenuOptions.BACK)],
+        [KeyboardButton(MenuOptions.BACK)],
     ], is_persistent=True,
         placeholder=MenuOptions.PLACEHOLDER,
         resize_keyboard=True)
@@ -158,7 +157,7 @@ faq_mapping = {
     MenuOptions.FAQ_OPTIONS.ABOUT_SCHOOL: {
         'keyboard': ReplyKeyboards.ABOUT_SCHOOL,
         MenuOptions.ABOUT_SHOOL_OPTIONS.HOW: FAQInfo.HOW,
-        MenuOptions.ABOUT_SHOOL_OPTIONS.BENEFITS: FAQInfo.BENEFITS,
+        # MenuOptions.ABOUT_SHOOL_OPTIONS.BENEFITS: FAQInfo.BENEFITS,
         MenuOptions.ABOUT_SHOOL_OPTIONS.WHO_WE_ARE: FAQInfo.WHO_WE_ARE,
     }
 }

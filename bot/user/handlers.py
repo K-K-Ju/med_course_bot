@@ -6,10 +6,9 @@ from pyrogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, InlineK
     CallbackQuery
 from pyromod import Client
 from pyromod.types import ListenerTypes
-from redis import ConnectionPool
 
 import bot.admin.handlers
-from bot.admin.db_driver import AdminDb
+from bot.di import DbContainer
 from bot.models import AppClient, ApplyDTO
 from bot.models import ClientDTO
 from bot.static import keyboards
@@ -19,25 +18,14 @@ from bot.static.keyboards import (
 )
 from bot.static.messages import Messages
 from bot.static.states import State, ApplyState, APPLY_STATE_TEXT_MAPPING
-from bot.user.db_driver import ClientsDb
-from bot.db_driver import LessonDb, ApplyDb
 
 logger = logging.getLogger('main_logger')
 app = AppClient.client
 
-_clients_db_: ClientsDb
-_lessons_db_: LessonDb
-_apply_db_: ApplyDb
-_admin_db_: AdminDb
-
-
-def inject_dbs(redis_pool: ConnectionPool):
-    global _clients_db_, _lessons_db_, _apply_db_, _admin_db_
-
-    _clients_db_ = ClientsDb(redis_pool)
-    _lessons_db_ = LessonDb(redis_pool)
-    _apply_db_ = ApplyDb(redis_pool)
-    _admin_db_ = AdminDb(redis_pool)
+_clients_db_ = DbContainer.clients_db()
+_lessons_db_ = DbContainer.lessons_db()
+_applies_db_ = DbContainer.applies_db()
+_admin_db_ = DbContainer.admin_db()
 
 
 async def send_start(c: Client, msg: Message):
@@ -61,7 +49,7 @@ async def send_menu(c: Client, msg: Message):
 
 async def show_status(c: Client, msg: Message):
     client = _clients_db_.get(str(msg.from_user.id))
-    applies = _apply_db_.get_by_user_id(str(msg.from_user.id))
+    applies = _applies_db_.get_by_user_id(str(msg.from_user.id))
     lessons = []
     for a in applies:
         les = _lessons_db_.get(a.lesson_id)
@@ -124,7 +112,7 @@ async def _send_lessons_list_(c: Client, chat_id):
 async def apply(c: Client, query: CallbackQuery):
     data = json.loads(query.data)
     a = ApplyDTO(data['user_id'], data['lesson_id'], ApplyState.NEW)
-    success = _apply_db_.add(a)
+    success = _applies_db_.add(a)
     if success:
         await c.send_message(data['user_id'], 'Ви записались на урок')
         await query.answer()
@@ -132,7 +120,6 @@ async def apply(c: Client, query: CallbackQuery):
         logger.error(f'Error while applying - {query.from_user.id=}, {a.lesson_id=}')
         await c.send_message(data['user_id'], 'Виникла помилка. Спробуйте пізніше або зв\'яжіться з менеджером')
         await query.answer()
-
 
 
 async def show_faq(c: Client, msg: Message):
@@ -157,8 +144,10 @@ async def show_faq(c: Client, msg: Message):
             faq_info = keyboards.faq_mapping[sec][msg.text]
             msg = await c.ask(chat_id, faq_info)
 
+
 async def receive_recipe(c: Client, msg: Message):
     ...
+
 
 async def answer(c: Client, msg: Message):
     chat_id = str(msg.chat.id)
@@ -171,7 +160,8 @@ async def answer(c: Client, msg: Message):
     elif msg.text == MenuOptions.START_MENU.REGISTER:
         await register(c, msg)
     elif msg.text == MenuOptions.START_MENU.CONTACT_MANAGER:
-        await c.send_message(chat_id, 'Перейдіть до бота підтримки <a href="https://t.me/med_school_support_bot">посилання</a>')
+        await c.send_message(chat_id,
+                             'Перейдіть до бота підтримки <a href="https://t.me/med_school_support_bot">посилання</a>')
     elif msg.text == MenuOptions.START_MENU.MENU:
         await send_menu(c, msg)
     elif msg.text == MenuOptions.START_MENU.SEND_RECIPE:

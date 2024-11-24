@@ -9,9 +9,7 @@ from pyrogram.types import Message
 from pyromod import Client
 
 import bot
-from bot.db_driver import LessonDb, ApplyDb
-from bot.user.db_driver import ClientsDb
-from bot.admin.db_driver import AdminDb
+from bot.di import DbContainer
 from bot.models import AppClient, LessonDTO, AdminDTO
 from bot.static.keyboards import AdminReplyKeyboards, MenuOptions
 from bot.static.states import State
@@ -19,20 +17,10 @@ from bot.static.states import State
 app = AppClient.client
 log = logging.getLogger()
 
-_admin_db_: AdminDb
-_lessons_db_: LessonDb
-_db_: ClientsDb
-_applies_db_: ApplyDb
-
-
-def inject_dbs(redis_pool):
-    global _db_, _lessons_db_, _admin_db_, _applies_db_
-
-    _db_ = ClientsDb(redis_pool)
-    _lessons_db_ = LessonDb(redis_pool)
-    _admin_db_ = AdminDb(redis_pool)
-    _applies_db_ = ApplyDb(redis_pool)
-
+_db_ = DbContainer.clients_db()
+_lessons_db_ = DbContainer.lessons_db()
+_applies_db_ = DbContainer.applies_db()
+_admin_db_ = DbContainer.admin_db()
 
 async def admin_start(c: Client, msg: Message):
     chat_id = str(msg.chat.id)
