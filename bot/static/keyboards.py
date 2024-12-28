@@ -1,14 +1,16 @@
+from enum import StrEnum, Enum
+
 from pyrogram.types import (
     ReplyKeyboardMarkup,
     KeyboardButton)
 
 
-class MenuOptions:
+class MenuOptions(StrEnum):
     PLACEHOLDER = '👇Оберіть пункт меню'
     BACK = '◀️Назад'
     ADMIN_PANEL = '📔Панель адміна'
 
-    class START_MENU:
+    class START_MENU(StrEnum):
         STATUS = '⚡️Дізнатись стан акаунту'
         FAQ = '❓FAQ'
         APPLY = '✅Запис на заняття'
@@ -17,12 +19,12 @@ class MenuOptions:
         MENU = '📔Головне меню'
         SEND_RECIPE = '🧾Відправити чек'
 
-    class FAQ_OPTIONS:
+    class FAQ_OPTIONS(StrEnum):
         ABOUT_SCHOOL = 'Про нас'
         WHO_SUITS = 'Кому підійде'
         MONEY = 'Оплата'
 
-    class ABOUT_SHOOL_OPTIONS:
+    class ABOUT_SHOOL_OPTIONS(StrEnum):
         WHO_WE_ARE = 'Хто ми і заради чого збір'
         HOW = 'Як ми це плануємо зробити?'
 
@@ -30,11 +32,11 @@ class MenuOptions:
         WHY = 'Навіщо це потрібно'
         LIST = 'Для кого підійде курс'
 
-    class MONEY_OPTIONS:
+    class MONEY_OPTIONS(StrEnum):
         PRICE = 'Ціна'
         TERMS = 'Умови та строки оплати'
 
-    class ADMIN_OPTIONS:
+    class ADMIN_OPTIONS(StrEnum):
         FIND_USER = '🔍Отримати дані про користувача через id, моб. тел. або @username'
         ADD_LESSON = '➡️Додати занятя'
         GET_LESSONS = '⬇️Список занять'
@@ -103,7 +105,7 @@ class AdminReplyKeyboards:
         resize_keyboard=True)
 
 
-class FAQInfo:
+class FAQInfo(StrEnum):
     WHO_WE_ARE = ('Ми молода команда, на чолі якої студенти медичного, економічного університету '
                   'та інформаційних технологій. Ми маємо бажання зробити свій внесок в майбутнє'
                   'української медицини та допомогти студентам-медикам знайти себе у вирі цієї складної, '

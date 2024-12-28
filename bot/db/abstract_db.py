@@ -1,26 +1,17 @@
 from abc import ABC, abstractmethod
+from sqlite3 import Connection
 
-import redis
+from bot.models.dto.dto import DTO
 
 
-class DTO(ABC):
-    @staticmethod
-    def default():
-        raise NotImplemented(reason='use this method with concrete successor')
-
-    @staticmethod
-    def from_json(d: dict):
-        raise NotImplemented(reason='use this method with concrete successor')
-
-    @staticmethod
-    def to_json_dict(dto):
-        raise NotImplemented(reason='use this method with concrete successor')
-
+def dict_factory(cursor, row):
+    fields = [column[0] for column in cursor.description]
+    return {key: value for key, value in zip(fields, row)}
 
 class AbstractDb(ABC):
-    def __init__(self, connection_pool):
-        self._r_ = redis.Redis(connection_pool=connection_pool)
-        self._r_json_ = self._r_.json()
+    def __init__(self, connection: Connection):
+        self._connection_ = connection
+        self._connection_.row_factory = dict_factory
 
     @abstractmethod
     def add(self, dto: DTO) -> bool:

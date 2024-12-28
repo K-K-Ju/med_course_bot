@@ -1,36 +1,72 @@
-import json
+import logging
+import sqlite3
+from sqlite3 import Connection
+from typing import Callable
 
-from bot.models import Res, Ok, Error
-import redis
+from bot.models.res import Ok, Error, Res
+
+logger = logging.getLogger('main_logger')
+
+def run_sql(con: Connection, query: Callable) -> Res:
+    try:
+        with con:
+            query()
+            return Ok()
+    except (sqlite3.OperationalError, sqlite3.IntegrityError) as pe:
+        logger.error(pe)
+        return Error(f"Cannot execute query -- {query}")
 
 
-def init_redis_pool(redis_host, redis_port):
-    return redis.ConnectionPool(db=1, host=redis_host, port=redis_port)
+def prepare_db(con):
+    with con:
+        cur = con.cursor()
 
+        script = """
+        CREATE TABLE IF NOT EXISTS clients
+        (
+            id           VARCHAR(100) PRIMARY KEY,
+            username     VARCHAR(50) NOT NULL,
+            name         VARCHAR(50),
+            phone_number VARCHAR(20),
+            state        INTEGER
+        );
+        
+        CREATE TABLE IF NOT EXISTS receipts
+        (
+            message_id VARCHAR(100) PRIMARY KEY,
+            client_id  VARCHAR(100) NOT NULL,
+        
+            FOREIGN KEY (client_id) REFERENCES clients (id)
+        );
+        
+        CREATE TABLE IF NOT EXISTS admins
+        (
+            client_id VARCHAR(100),
+            state     INTEGER NOT NULL,
+        
+            FOREIGN KEY (client_id) REFERENCES clients (id)
+        );
+        
+        CREATE TABLE IF NOT EXISTS lessons
+        (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            title       VARCHAR(255) NOT NULL,
+            datetime    TIMESTAMP    NOT NULL,
+            price       INTEGER      NOT NULL,
+            description VARCHAR(255) NOT NULL
+        );
+        
+        CREATE TABLE IF NOT EXISTS applies
+        (
+            id        INTEGER PRIMARY KEY AUTOINCREMENT,
+            lesson_id INTEGER      NOT NULL,
+            client_id VARCHAR(100) NOT NULL,
+        
+            FOREIGN KEY (client_id) REFERENCES clients (id),
+            FOREIGN KEY (lesson_id) REFERENCES lessons (id)
+        );
+        """
 
-def run_query(query) -> Res:
-    res = query()
-    if res:
-        return Ok(res)
-    else:
-        return Error('No records were found')
-
-
-def prepare_db(redis_pool):
-    r = redis.StrictRedis(connection_pool=redis_pool)
-    docs = {'bot:users:clients': [{'id': 0}],
-            'bot:users:admins': [],
-            'bot:lessons': [],
-            'bot:applies': []}
-
-    for doc_name, doc_struct in docs.items():
-        r.json().set(doc_name, '$', json.dumps(doc_struct), nx=True)
-
-    print('Testing database...')
-    test_key, test_value = 'test_key', 100
-    r.set(test_key, format(test_value, 'b'))
-    res = int(r.get(test_key), 2)
-    assert res == test_value
-    r.delete(test_key)
-    print('Finished testing database')
-    r.close()
+        cur.execute(script)
+        cur.close()
+        con.commit()

@@ -1,0 +1,1 @@
+APPLY_CALLBACK_HANDLER_INPUT_FORMAT=r'{(((\"user_id\":\s\d{9})|(\"lesson_id\":\s\"lesson:\d+\"))(\, )?){2}}'

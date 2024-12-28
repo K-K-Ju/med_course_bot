@@ -1,22 +1,35 @@
+import logging
+import os
+
 from dependency_injector import containers, providers
+from sqlalchemy import create_engine, QueuePool
 
-
-from bot.admin.db_driver import AdminDb
+from bot.db.admin_db import AdminDb
+from bot.db.apply_db import ApplyDb
+from bot.db.client_db import ClientsDb
 from bot.config import app_config
-from bot.db_driver import LessonDb, ApplyDb
-from bot.user.db_driver import ClientsDb
-from bot.utils import init_redis_pool
+from bot.db.lesson_db import LessonDb
 
+sqlite_engine = create_engine(f'sqlite:///{os.path.join(os.path.abspath(os.path.dirname(__package__)), app_config.db_file)}',
+                      poolclass=QueuePool, pool_size=20, max_overflow=10)
+
+def get_connection():
+    con = sqlite_engine.connect()
+    logging.debug('Returning Sqlite connection')
+    yield con
+    con.close()
 
 
 class DbContainer(containers.DeclarativeContainer):
-    # wiring_config = containers.WiringConfiguration(modules=[bot.user.db_driver, bot.admin.db_driver, bot.db_driver])
-    redis_pool = providers.Singleton(init_redis_pool, app_config.redis_host, app_config.redis_port)
-    # redis_pool = providers.Dependency()
-    admin_db = providers.Factory(AdminDb, connection_pool=redis_pool)
-    clients_db = providers.Factory(ClientsDb, connection_pool=redis_pool)
-    lessons_db = providers.Factory(LessonDb, connection_pool=redis_pool)
-    applies_db = providers.Factory(ApplyDb, connection_pool=redis_pool)
+    wiring_config = containers.WiringConfiguration(
+        modules=['bot.client.db_driver', 'bot.admin.db_driver', 'bot.db_driver']
+    )
+
+    sqlite_connection = providers.Resource(sqlite_engine.connect)
+    admin_db = providers.Factory(AdminDb, connection=sqlite_connection)
+    clients_db = providers.Factory(ClientsDb, connection=sqlite_connection)
+    lessons_db = providers.Factory(LessonDb, connection=sqlite_connection)
+    applies_db = providers.Factory(ApplyDb, connection=sqlite_connection)
 
 
 # class AppContainer(containers.DeclarativeContainer):
