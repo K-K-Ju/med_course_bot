@@ -1,5 +1,7 @@
 import logging
 
+from bot.config import LoggerConfig
+
 
 class CustomFormatter(logging.Formatter):
     grey = "\x1b[38;20m"
@@ -23,15 +25,15 @@ class CustomFormatter(logging.Formatter):
         return formatter.format(record)
 
 
-def prepare_logger(level, log_file_path):
+def prepare_logger(config: LoggerConfig):
     log = logging.getLogger('main_logger')
-    log.setLevel(level)
+    log.setLevel(config.log_level)
     fmtr = CustomFormatter()
     ch = logging.StreamHandler()
-    fh = logging.FileHandler(filename=log_file_path, mode='a+', encoding='utf-8')
+    fh = logging.FileHandler(filename=config.log_file_path, mode='a+', encoding='utf-8')
 
-    ch.setLevel(level)
-    fh.setLevel(level)
+    ch.setLevel(config.log_level)
+    fh.setLevel(config.log_level)
 
     ch.setFormatter(fmtr)
     fh.setFormatter(

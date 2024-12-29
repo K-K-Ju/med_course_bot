@@ -1,4 +1,5 @@
 import logging
+from typing import NoReturn
 
 from bot.db.abstract_db import AbstractDb, DTO
 from bot.models.dto.admin import AdminDTO
@@ -13,13 +14,13 @@ class AdminDb(AbstractDb):
     def __init__(self, connection):
         super().__init__(connection)
         logger.info('Preparing admin db driver...')
-        self._table_ = 'admins'
+        self._table = 'admins'
         logger.info('Admin db preparing is finished')
 
-    def add(self, admin_dto: AdminDTO):
+    def add(self, admin_dto: AdminDTO) -> NoReturn:
         logger.info(f'Adding admin with {admin_dto.id=}')
-        res = run_sql(self._connection_,
-                      lambda: self._connection_.execute(
+        res = run_sql(self._connection,
+                      lambda: self._connection.execute(
                           'INSERT INTO admins (client_id, state) VALUES (?, ?)',
                           (admin_dto.id, admin_dto.state))
                       )
@@ -30,13 +31,13 @@ class AdminDb(AbstractDb):
 
     def is_admin(self, user_id: str) -> bool:
         logger.debug(f'Checking whether {user_id} is admin')
-        cur = self._connection_.execute('SELECT client_id FROM admins WHERE client_id=?', (user_id,))
+        cur = self._connection.execute('SELECT client_id FROM admins WHERE client_id=?', (user_id,))
         if cur.fetchone():
             return True
         return False
 
     def get_state(self, user_id: str) -> State:
-        cur = self._connection_.execute(
+        cur = self._connection.execute(
             'SELECT state FROM admins WHERE client_id=?', (user_id,)
         )
         d = cur.fetchone()
@@ -46,8 +47,8 @@ class AdminDb(AbstractDb):
             return State.NOT_REGISTERED
 
     def set_admin_state(self, user_id: str, state: State):
-        res = run_sql(self._connection_,
-                      lambda: self._connection_.execute(
+        res = run_sql(self._connection,
+                      lambda: self._connection.execute(
                           'UPDATE admins SET state=? WHERE client_id=?',
                           (state.value, user_id))
                       )

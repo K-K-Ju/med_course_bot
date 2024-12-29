@@ -7,5 +7,4 @@ from bot.static.enums.states import State
 
 
 class AdminDTO(DTO):
-    idx: Annotated[str, Field()]
     state: Annotated[State, Field()]

@@ -63,8 +63,8 @@ async def view_lessons(c: Client, msg: Message,
                        lessons_db=Provide[DbContainer.lessons_db]):
     lessons = lessons_db.list()
     s = ""
-    for l in lessons:
-        s += f"{l.title} - {l.datetime} - {l.price}\n""{l.title} - {l.datetime} - {l.price}\n"
+    for lesson in lessons:
+        s += f"{lesson.title} - {lesson.datetime} - {lesson.price}\n{lesson.title} - {lesson.datetime} - {lesson.price}\n"
 
     await c.send_message(msg.chat.id, s)
 
@@ -120,5 +120,5 @@ async def retrieve_user_data(c: Client, msg: Message, credentials: str,
 
     await c.send_message(msg.chat.id,
                          f"**User**:\n\tId: {user.id}\n\t**username**: {user.user_name}\n\t**phone_number**: {user.phone_number}\n\n" +
-                         f"Assignments:\n" + "\n".join([al.title for al in assigned_lessons]),
+                         "Assignments:\n" + "\n".join([al.title for al in assigned_lessons]),
                          parse_mode=ParseMode.MARKDOWN)

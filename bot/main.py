@@ -1,31 +1,31 @@
-import logging
-
 from bot.models.app_client import AppClient
 from bot.static.enums.commands import BotCommands
 from bot.static.regex import APPLY_CALLBACK_HANDLER_INPUT_FORMAT
-from config import app_config
 from logger import prepare_logger
 
 from pyrogram.handlers import CallbackQueryHandler
 from pyromod import MessageHandler, Client
 from pyrogram import filters
 
-from bot.di import DbContainer
+from bot.di import DbContainer, ConfigsContainer
 from bot.custom_filters import is_admin, first_is_emoji
 from bot.handlers import admin as admin_handlers
 from bot.utils import prepare_db
 import bot.handlers.client as user_handlers
 
 if __name__ == '__main__':
-    prepare_logger(logging.DEBUG, app_config.log_file_path)
+    configs_container = ConfigsContainer()
     db_container = DbContainer()
 
+    prepare_logger(configs_container.logger_config)
+
+    app_config = configs_container.app_config
     AppClient(name="Med School Bot", lang='ua',
               api_hash=app_config.api_hash,
               api_id=app_config.api_id,
               bot_token=app_config.bot_token)
 
-    prepare_db(db_container.sqlite_connection)
+    prepare_db(db_container.sqlite_con)
     AppClient.handlers = {'user_handler': user_handlers}
 
     client: Client = AppClient.client

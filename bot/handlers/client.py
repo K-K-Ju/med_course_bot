@@ -111,10 +111,10 @@ async def _send_lessons_list_(c: Client, chat_id,
                               lessons_db=Provide[DbContainer.lessons_db]):
     lessons = lessons_db.list()
     # TODO filtration
-    for l in lessons:
-        data = {"user_id": chat_id, "lesson_id": l.id}
+    for lesson in lessons:
+        data = {"user_id": chat_id, "lesson_id": lesson.id}
         data_json = json.dumps(data)
-        await c.send_message(chat_id, f"Title - {l.title}\nPrice - {l.description}",
+        await c.send_message(chat_id, f"Title - {lesson.title}\nPrice - {lesson.description}",
                              reply_markup=InlineKeyboardMarkup([
                                  [InlineKeyboardButton("Записатись", callback_data=data_json)]
                              ]))

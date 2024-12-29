@@ -1,11 +1,12 @@
-from typing import Generic, TypeVar, Optional
+from typing import Generic, TypeVar, Union
 
 T = TypeVar('T')
+ExcType = TypeVar('ExcType', bound=Exception)
 
 
-class Res(Generic[T]):
-    def __init__(self, val: Optional[T] = None):
-        self.val: Optional[T] = val
+class Res(Generic[T, ExcType]):
+    def __init__(self, val: Union[T, ExcType] = None):
+        self.val: Union[T, ExcType] = val
 
 
 class Ok(Res):

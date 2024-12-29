@@ -1,17 +1,25 @@
 import logging
 import sqlite3
-from sqlite3 import Connection
-from typing import Callable
+from sqlite3 import Connection, Cursor
+from typing import Callable, Any, Optional, Dict
 
-from bot.models.res import Ok, Error, Res
+from bot.models.res import Res, Ok, Error
 
 logger = logging.getLogger('main_logger')
 
-def run_sql(con: Connection, query: Callable) -> Res:
+
+def get_single_dict_by_sql(con: Connection, query: Callable[[], Cursor]) -> Optional[Dict[str, Any]]:
+    res = run_sql(con, query)
+    if res is Ok and (d := res.val.fetchone()):
+        return d
+    return None
+
+
+def run_sql(con: Connection, query: Callable[[], Cursor]) -> Res[
+    Cursor, sqlite3.OperationalError | sqlite3.IntegrityError]:
     try:
         with con:
-            query()
-            return Ok()
+            return Ok(query())
     except (sqlite3.OperationalError, sqlite3.IntegrityError) as pe:
         logger.error(pe)
         return Error(f"Cannot execute query -- {query}")
@@ -61,6 +69,7 @@ def prepare_db(con):
             id        INTEGER PRIMARY KEY AUTOINCREMENT,
             lesson_id INTEGER      NOT NULL,
             client_id VARCHAR(100) NOT NULL,
+            state     INTEGER DEFAULT (0),
         
             FOREIGN KEY (client_id) REFERENCES clients (id),
             FOREIGN KEY (lesson_id) REFERENCES lessons (id)

@@ -7,7 +7,7 @@ from bot.static.enums.states import State
 
 
 class ClientDTO(DTO):
-    idx: Annotated [str, Field()]
+    idx: Annotated[str, Field(alias="id", default="0")]
     username: Annotated[str, Field()]
     name: Annotated[str, Field()]
     phone_number: Annotated[str, Field()]
